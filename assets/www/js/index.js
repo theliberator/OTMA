@@ -306,103 +306,16 @@ var app = {
     initMouseEventsOnForeground: function() {
     	con.debug('init mouse events');
     	var canvas = $("#foreground");
-    	var tool = {
-			pressed: false,
-			done: false,
-			offsetLeft: null,
-			offsetTop: null,
-			sx: 0,
-			sy: 0,
-			moved: false
-    	};
-    	
-    	var touchmove = function(e, pos_obj)
-    	{
-    		if (!tool.pressed) {
-    			return;
-    		}
-    		con.debug("touchmove");
-            // disable the standard ability to select the touched object
-    		e.preventDefault();
-    		
-            var x = pos_obj.pageX - tool.offsetLeft;
-            var y = pos_obj.pageY - tool.offsetTop;
-            var dx = (tool.sx - x);
-            var dy = (tool.sy - y);
-            var nx = gui.look_offset_x - dx;
-            var ny = gui.look_offset_y - dy;
-            gui.setLookOffset(nx,ny); //TODO
-            gui.calcPosFromPlayerPos(map.player.x, map.player.y); //TODO
-            tool.sx = x;
-            tool.sy = y;
-            
-            gui.draw(); // is needed on android!
-            con.debug("touchmove_end: " + dx + "," + dy);
-    	};
-    	
-    	var touchstart = function(e, pos_obj)
-    	{
+    	canvas.on('tap', function(event) {
     		if ($('.ui-page-active').attr('id') != "gamediv") {
     			return;
     		}
-    		tool.pressed = true;
-            // disable the standard ability to select the touched object
-    		//e.preventDefault();
-    		tool.offsetLeft = $("#foreground").parent().offset().left;
-    		tool.offsetTop = $("#foreground").parent().offset().top;
-            tool.sx = pos_obj.pageX - tool.offsetLeft;
-            tool.sy = pos_obj.pageY - tool.offsetTop;
-    	};
-    	
-    	var touchend = function(e, pos_obj)
-    	{
-//    		if (!tool.pressed) {
-//    			return;
-//    		}
-            // disable the standard ability to select the touched object
-    		//e.preventDefault();
-    		tool.pressed = false;
-    	};
-    	
-    	// bind mouse events
-        canvas.mousemove(function(e) {
-            if (!tool.pressed) {
-               return;
-            }
-            var dx = (tool.sx - (e.pageX - tool.offsetLeft));
-            var dy = (tool.sy - (e.pageY - tool.offsetTop));
-            var dd = Math.sqrt(dx*dx + dy*dy);
-            
-            if (tool.moved || (dd > 8))
-            {
-    	        tool.moved = true;
-    	        touchmove(e,e);
-            }
-        });
-        canvas.mousedown(function(e) {
-            tool.pressed = true;
-            tool.moved = false;
-            tool.offsetLeft = $("#foreground").parent().offset().left;
-    		tool.offsetTop = $("#foreground").parent().offset().top;
-            touchstart(e,e);
-//            tool.done = false;
-        });
-        canvas.mouseup(function(e) {
-            tool.pressed = false;
-            if (!tool.moved && !tool.done)
-            {
-                var x = e.pageX - tool.offsetLeft;
-        		var y = e.pageY - tool.offsetTop;
-        		EventManager.getInstance().clickEvent(Renderer.getInstance().translateClickPos(x,y));
-            }
-            tool.done = true;
-            setTimeout(function() { tool.done = false; }, 500);
-        	touchend(e,e);
-        });
-        
-        canvas.on('touchstart', function(e) { touchstart(e, e.touches[0]); });
-        canvas.on('touchmove', function(e) { touchmove(e, e.touches[0]); });
-        canvas.on('touchend', function(e) { touchend(e, e.touches[0]); });
+//    		con.debug('trigger tap event');
+    		var x = event.pageX - $("#foreground").parent().offset().left;
+    		var y = event.pageY - $("#foreground").parent().offset().top;
+    		EventManager.getInstance().clickEvent(Renderer.getInstance().translateClickPos(x,y));
+    	});
+        canvas.on('touchmove', false);
     },
     
     setCanvasSize: function(ctx)
