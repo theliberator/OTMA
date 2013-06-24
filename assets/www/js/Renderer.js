@@ -101,8 +101,8 @@ Renderer.prototype.calcPosFromPlayerPos = function(x,y)
 	var height = self.map.rows * self.map.cellsize;
 	var width = self.map.cols * self.map.cellsize;
 	
-	hx = (self.ctx_width / 2) | 0;
-	hy = (self.ctx_height / 2) | 0;
+	var hx = (self.ctx_width / 2) | 0;
+	var hy = (self.ctx_height / 2) | 0;
 	var tx = -x -16 + hx + self.look_offset_x;
 	var ty = -y -16 + hy + self.look_offset_y;
 	if (tx > 0) {
@@ -218,8 +218,8 @@ Renderer.prototype.draw = function(forced)
 		var bg_pos_changed = (forced == true) || ( !( (dx < 0.2) && (dx > -0.2) && (dy < 0.2) && (dy > -0.2)) );
 		
 		if (bg_pos_changed) {
-			self.drawLayer_V2(ctx_bg,this.map.layer_background);
-			self.drawLayer_V2(ctx_bg,this.map.layer_ground);
+			self.drawLayer_V2(ctx_bg, self.map.layer_background);
+			self.drawLayer_V2(ctx_bg, self.map.layer_ground);
 			for (var nr in self.map.story.levels[self.map.player.z].npcs)
 			{
 				self.drawCharacter(ctx_bg,self.map.story.levels[self.map.player.z].npcs[nr]);
@@ -255,7 +255,7 @@ Renderer.prototype.draw = function(forced)
 		dy = (self.last_py - self.map.player.y);
 		
 		var player_pos_changed = (!( (dx < kd) && (dx > -kd) && (dy < kd) && (dy > -kd)))
-								|| (this.last_p_icon != this.map.player.icon);
+								|| (self.last_p_icon != self.map.player.icon);
 		if (player_pos_changed || bg_pos_changed || target_pos_changed)
 		{
 			// first clear old player:
@@ -290,18 +290,18 @@ Renderer.prototype.drawLayer_V2 = function(ctx,layer)
 {
 	var self = this;
 	con.debug(ctx);
-    var sx = (-self.bgdx / this.map.cellsize) | 0;
-    var sy = (-self.bgdy / this.map.cellsize) | 0;
+    var sx = (-self.bgdx / self.map.cellsize) | 0;
+    var sy = (-self.bgdy / self.map.cellsize) | 0;
     
-    var x_count = 2+ sx + ((self.ctx_width / this.map.cellsize) | 0);
-    var y_count = 2+ sy + ((self.ctx_height / this.map.cellsize) | 0);
+    var x_count = 2+ sx + ((self.ctx_width / self.map.cellsize) | 0);
+    var y_count = 2+ sy + ((self.ctx_height / self.map.cellsize) | 0);
     
-    var ts = this.map.tilesets["tilesheet"];
-    var cellsize = this.map.cellsize;
+    var ts = self.map.tilesets["tilesheet"];
+    var cellsize = self.map.cellsize;
     	
     for (var y = sy; y < y_count; y++)
     {
-    	var row_start = y*this.map.cols;
+    	var row_start = y*self.map.cols;
 		var vy = y*cellsize + self.bgdy;
 		for (var x = sx; x < x_count; x++)
 		{
@@ -348,8 +348,8 @@ Renderer.prototype.drawCharacter = function(r_ctx, npc)
 
 	var ts = self.map.tilesets[npc.class];
 	
-	px = ((npc.x * self.map.cellsize) + self.bgdx) | 0;
-	py = ((npc.y * self.map.cellsize) + self.bgdy) | 0;
+	var px = ((npc.x * self.map.cellsize) + self.bgdx) | 0;
+	var py = ((npc.y * self.map.cellsize) + self.bgdy) | 0;
 	ts.draw(r_ctx,ts.firstgid+npc.icon+npc.npc_typ*ts.cols,px-16,py-24); // -16 , -24 fix coordinates since we have 64x64 character tiles!
 	
 	var h = this.map.cellsize / 2;
@@ -376,8 +376,8 @@ Renderer.prototype.drawCharacter = function(r_ctx, npc)
  */
 Renderer.prototype.clearCharacter = function(r_ctx,bg_x,bg_y,npc_x,npc_y,npc)
 {
-	px = 0 | (npc_x*this.map.cellsize) + bg_x;
-	py = 0 | (npc_y*this.map.cellsize) + bg_y;
+	var px = 0 | (npc_x*this.map.cellsize) + bg_x;
+	var py = 0 | (npc_y*this.map.cellsize) + bg_y;
 	r_ctx.clearRect(px-16,py-24,64,64);
 	
 	var h = this.map.cellsize / 2;

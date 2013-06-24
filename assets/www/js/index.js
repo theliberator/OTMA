@@ -37,7 +37,9 @@ var app = {
     // The scope of 'this' is the event. 
     onDeviceReady: function() {
     	con.info("device Ready");
-    	app.platform = device.platform;
+    	if (device.platform != null) {
+			app.platform = device.platform;
+    	}
         con.info("Current platform is: " + app.platform);
         con.debug("userAgent: " + navigator.userAgent);
   		$("#exit_game_button").click(function() {
@@ -49,7 +51,7 @@ var app = {
   		
   		// Init downloader.
   		con.debug('init downloader');
-  		downloader = Downloader.getInstance();
+  		var downloader = Downloader.getInstance();
   		downloader.fileTransfer = new FileTransfer();
 		
 		// Base path.
@@ -259,6 +261,7 @@ var app = {
     				
     					// Run game loop!
     					con.info("game start now!");
+    					gui.forcedDraw();
     					app.gameLoop();
     				});
     			});
@@ -297,7 +300,7 @@ var app = {
     	} else {
     		var currentTime = new Date().getTime();
     		AnimationMgr.getInstance().animate(currentTime);
-    		Renderer.getInstance().draw();
+//    		Renderer.getInstance().draw();
     		EventManager.getInstance().timeEvent(currentTime);
     	}
     	setTimeout(app.gameLoop, 40);

@@ -28,7 +28,7 @@ var helper = {
 		var ret_str = str;
 		for(var i = 0; i < adds.length; i++)
 		{
-			add = adds[i];
+			var add = adds[i];
 			ret_str += sep + add;
 		}
 		return ret_str;

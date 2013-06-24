@@ -37,8 +37,8 @@ function Tileset(filename, tilewidth, tileheight, imgwidth, imgheight, propertie
 
 Tileset.prototype.draw = function(ctx, id, x, y)
 {
-	size_x = this.tilewidth;
-	size_y = this.tileheight;
+	var size_x = this.tilewidth;
+	var size_y = this.tileheight;
 
 	id = id - this.firstgid;
 
@@ -60,8 +60,8 @@ Tileset.prototype.draw = function(ctx, id, x, y)
 
 Tileset.prototype.clear = function(ctx, x, y)
 {
-	size_x = this.tilewidth;
-	size_y = this.tileheight;
+	var size_x = this.tilewidth;
+	var size_y = this.tileheight;
 
 	ctx.clearRect(
             x,  // dest pos + size

@@ -26,7 +26,7 @@ Storage.getInstance = function()
 function Storage()
 {
 	// Init.
-	if (localStorage.data.length > 0) {
+	if (localStorage > 0 && localStorage.data.length > 0) {
 		this.load();
 	} else {
 		this.reset(false);
@@ -54,14 +54,16 @@ Storage.prototype.minScore = 100;
  */
 Storage.prototype.save = function()
 {
-	//we dont use "this" in here, because this method will be called by an event handler. And "this" would be
-	//the event in this scope
-	
-	// Update time before saving.
-	Storage.getInstance().updateTime();
-	
-	// Save.
-	localStorage.data = JSON.stringify(Storage.getInstance().data);
+	if (app.platform != 'Web') {
+		//we dont use "this" in here, because this method will be called by an event handler. And "this" would be
+		//the event in this scope
+		
+		// Update time before saving.
+		Storage.getInstance().updateTime();
+		
+		// Save.
+		localStorage.data = JSON.stringify(Storage.getInstance().data);
+	}
 };
 
 /**
@@ -110,7 +112,7 @@ Storage.prototype.reset = function(retainHighscores)
 	if (retainHighscores) {
 		// Load local storage.
 		
-		if (localStorage.data.length == 0) {
+		if (localStorage.length == 0 && localStorage.data.length == 0) {
 			return; //nothing to load
 		}
 		var data = JSON.parse(localStorage.data);

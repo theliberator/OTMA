@@ -43,10 +43,10 @@ AnimationMgr.prototype.add = function(animation)
 AnimationMgr.prototype.animate = function(time)
 {
 	var self = this;
-	i = 0; 
+	var i = 0; 
 	while (i < self.animations.length)
 	{
-		ani = self.animations[i];
+		var ani = self.animations[i];
 		var end = false;
 		if (ani.last == 0) {
 			ani.last = time - ani.delta;

@@ -310,6 +310,8 @@ EventManager.prototype.timeEvent = function(time)
 		self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
 		self.was_walking = false;
 	}
+	
+	self.renderer.draw();
 };
 
 /**
@@ -377,53 +379,52 @@ EventManager.prototype.playerReachedPosEvent = function()
 	}
 };
 
+/**
+ * click event
+ */
 EventManager.prototype.clickEvent = function(pos)
 {	
-	this.storage.incClicks();
+	var self = this;
+	self.storage.incClicks();
 	
-	if (this.event_running > 0)
+	if (self.event_running > 0)
 	{
 		// don't accept click events on canvas while event is running!
 		return; 
 	}
 	
-	if (this.dialogMgr.hasActiveDialog())
+	if (self.dialogMgr.hasActiveDialog())
 	{
-		this.dialogMgr.closeDialog();
+		self.dialogMgr.closeDialog();
 		return;
 	}
 	
-	/*var npc = this.getNpcAt(pos);
-	if (npc != null)
-	{
-		this.talkEvent(npc);
-		// alert("clicked on npc: " + npc.id + " name: " + npc.name);
-		return;
-	}*/
+	var moves = AStar(self.map, [self.player.sx, self.player.sy], [pos.x, pos.y]);
 	
-	player = this.player;
-	this.playerWalkJob = [];
-	
-	var moves = AStar(this.map, [player.sx, player.sy], [pos.x, pos.y]);
-	
-	if (moves.length > 0)
-	{
-		this.targetAni = new AnimationTargetHighlight(this.map.target, [0,1,2,3], 10, pos.x, pos.y);
-		this.animationMgr.add(this.targetAni);
+	if (moves.length > 0) {
+		var targetAni = new AnimationTargetHighlight(self.map.target, [0,1,2,3], 10, pos.x, pos.y);
+		self.animationMgr.add(targetAni);
 		
-		this.playerWalkJob = moves;
+		self.playerWalkJob = moves;
 		
 		// Richard: Start Walk-Sound here!
-	}
-	else
-	{
-		this.targetAni = new AnimationTargetHighlight(this.map.target, [4,5,6,7], 10, pos.x, pos.y);
-		this.animationMgr.add(this.targetAni);
+	} else {
+		var targetAni = new AnimationTargetHighlight(self.map.target, [4,5,6,7], 10, pos.x, pos.y);
+		self.animationMgr.add(targetAni);
 		
-		// Richard: Beep sound evtl. (position nicht erreichbar)
 		// play error sound
 		SoundModule.getInstance().playSfx("error");
 	}
+	
+//	while(self.playerWalkJob.length > 0) {
+//		self.processNextPlayerWalkJob();
+//		self.animationMgr.animate(new Date().getTime());
+//	}
+//	
+//	self.renderer.look_offset_x = 0;
+//	self.renderer.look_offset_y = 0;
+//	self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
+//	self.renderer.draw();
 };
 
 EventManager.prototype.checkCondition = function(name)
@@ -461,42 +462,6 @@ EventManager.prototype.talkEvent = function(npc)
 	}
 };
 
-// nur zum Testen ohne Pathfinder! 
-EventManager.prototype.arrowPressedEvent = function(direction)
-{
-	if ((this.playerWalkAni == undefined) || (this.playerWalkAni.ready == true))
-	{
-		var dx = 0;
-		var dy = 0;
-		
-		switch (direction)
-		{
-		case "up":
-			dy = -1;
-			break;
-		case "down":
-			dy = 1;
-			break;
-		case "left":
-			dx = -1;
-			break;
-		case "right":
-			dx = 1;
-			break;
-		}
-		
-		
-		var x = this.player.sx + dx;
-		var y = this.player.sy + dy;
-		
-		if (this.map.isColliding(x,y) == false)
-		{
-			this.playerWalkJob.push(direction);
-			//alert(this.playerWalkJob);
-		}
-	}
-};
-
 EventManager.prototype.keyPressedEvent = function(key)
 {
 	switch (key)
@@ -517,7 +482,8 @@ EventManager.prototype.keyPressedEvent = function(key)
 		
 EventManager.prototype.processNextPlayerWalkJob = function()
 {
-	var direction = this.playerWalkJob.shift();
+	var self = this;
+	var direction = self.playerWalkJob.shift();
 	var dx = 0;
 	var dy = 0;
 	
@@ -537,25 +503,25 @@ EventManager.prototype.processNextPlayerWalkJob = function()
 		break;
 	}
 
-	this.player.x = this.player.x | 0;
-	this.player.y = this.player.y | 0;
+//	this.player.x = this.player.x | 0;
+//	this.player.y = this.player.y | 0;
 	this.player.icon = this.player.ani_walk[direction][0];
 	
-	if (this.playerWalkJob.length == 0)
+	if (self.playerWalkJob.length == 0)
 	{
-		var npc = this.map.getNpc(this.player.x + dx, this.player.y + dy, this.player.z);
+		var npc = self.map.getNpc(self.player.x + dx, self.player.y + dy, self.player.z);
 		if (npc != null)
 		{
-			this.talkEvent(npc);
+			self.talkEvent(npc);
 			return;
 		}
 	}
 
-	this.player.sx = this.player.x + dx;
-	this.player.sy = this.player.y + dy;
+	self.player.sx = self.player.x + dx;
+	self.player.sy = self.player.y + dy;
 	
-	this.playerWalkAni = new AnimationPlayerMove(this.player, this.player.ani_walk[direction], dx, dy, 1, this);
-	this.animationMgr.add(this.playerWalkAni);
-	this.storage.incSteps();
+	self.playerWalkAni = new AnimationPlayerMove(self.player, self.player.ani_walk[direction], dx, dy, 1, self);
+	self.animationMgr.add(self.playerWalkAni);
+	self.storage.incSteps();
 
 };

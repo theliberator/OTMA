@@ -131,8 +131,8 @@ Map.prototype.init = function(map_data, on_init_done)
 	// Workaround for not being able to set icon in Renderer.prototype.drawCharacter function
 	for (var i = 0; i < self.story.levels.length; i++) {
 		var npcs = self.story.levels[i].npcs;
-		for (k in npcs) {
-			npc = npcs[k];
+		for (var k in npcs) {
+			var npc = npcs[k];
 			try {
 				npc.icon = parseInt(self.tilesets[npc.class].properties[npc.direction]);
 			} catch (err) {

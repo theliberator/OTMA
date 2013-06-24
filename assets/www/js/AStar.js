@@ -86,7 +86,7 @@ function AStar(map, start, end, f) {
 	} while (length);
 
 	/* Translate the coordinates into moves suitable for EventManager. */
-	move_list = [];
+	var move_list = [];
 
 	for (i = 0; i < result.length - 1; i++){
 		if (result[i][0] < result[i+1][0])
