@@ -211,7 +211,7 @@ EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
 			event.dialog_cntr = (event.dialog_cntr + 1) % action.text.length;
 			return; // continue with actions after dialog ends
 		case "random_dialog":
-			var ran = rand(0, action.text.length);
+			var ran = helper.rand(0, action.text.length);
 			var dialog = new Dialog("talk", 
 					action.headline, action.img, action.text[ran], nextAction);
 			self.dialogMgr.openDialog(dialog);
