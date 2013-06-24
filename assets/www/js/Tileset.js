@@ -6,21 +6,24 @@
  * - create Tileset object
  * - call Map.draw() to draw an tile of the set
  * 
- * @author Ulrich Hornung
- * @version 1.0
- * @since 09.06.2012
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
 
 
 function Tileset(filename, tilewidth, tileheight, imgwidth, imgheight, properties, firstgid, onload)
 {
-	this.firstgid = firstgid | 0;
 	this.filename = filename;
 	this.tilewidth = tilewidth | 0;
 	this.tileheight = tileheight | 0;
 	this.imgwidth = imgwidth | 0;
 	this.imgheight = imgheight | 0;
 	this.properties = properties;
+	this.firstgid = firstgid | 0;
 	
 	this.cols = (imgwidth / tilewidth) | 0;
 	this.rows = (imgheight / tileheight) | 0;

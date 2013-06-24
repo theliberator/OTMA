@@ -19,8 +19,8 @@
 	  <script type="text/javascript" charset="utf-8" src="otma_map.js"></script>
       <script type="text/javascript" charset="utf-8" src="res/facebox/facebox.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/AStar.js"></script>
-	  <script type="text/javascript" charset="utf-8" src="js/tileset.js"></script>
-	  <script type="text/javascript" charset="utf-8" src="js/loadxmldoc.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/helperFunctions.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Tileset.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/EventManager.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/Renderer.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/Dialog.js"></script>
@@ -36,15 +36,10 @@
 	  <script type="text/javascript" charset="utf-8" src="js/NPC.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/Teleport.js"></script>
 	  <script type="text/javascript" charset="utf-8" src="js/Downloader.js"></script>
-	  <script type="text/javascript" charset="utf-8" src="js/MapLoader.js"></script>
-	  <script type="text/javascript" charset="utf-8" src="main.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Map.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/index.js"></script>
 	  <script type="text/javascript">
-	    /* needed for webbrowser: start main after timeout of 1 second */
-        setTimeout(function() { main(); }, 1000);
-	  </script>
-	  <!-- //TODO neu von pabel -->
-	  <script type="text/javascript">
-	  	//wait for cordova to load
+	  	//console config
   		var con = console; //debug
   		//production
   		/*var con = {
@@ -53,25 +48,13 @@
   				debug: function() {},
   				info: function() {}
   		}*/
-	  	$(function() {
-	  		document.addEventListener("deviceready", onDeviceReady, false);
-	  	});
-	  	//Cordova is ready
-	  	function onDeviceReady() {
-	  		//window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, gotFS, fail);
-	  		con.log("first ------------------------------------------ ");
-            con.debug("userAgent: " + navigator.userAgent);
-	  		$("#exit_game_button").click(function() {
-	  			navigator.app.exitApp();
-	  		});
-            main();
-	  	}
+  		
+  		//start the app
+	  	app.initialize();
 	  	
-	  	//$(function() {
-	  	//});
 	  </script>
   </head>
-  <body id="main" onkeydown="controls(event);">
+  <body id="main"> <!-- onkeydown="controls(event);"> -->
   <div id="root_div">
   </div>
  	
@@ -191,11 +174,9 @@
 			<p><a href="#menustats" data-role="button">Statistics</a></p>
 			<p><a href="#gamediv" onclick="setTimeout(function() { gui.forcedDraw();}, 10);" data-role="button">Back to game</a></p>
 			<h1>Options</h1>
-			<p><label><input id="sound_enable_btn" type="checkbox" name="checkbox-1" onclick="soundCheckBoxListener(this.checked)" /> Enable Sound </label></p>
-			<!-- <p><label><input id="music_volume" type="range" min="0" max="100" value="35" onchange="musicVolumeListener(this.value)" /> Music Volume </label></p>
-			<p><label><input id="sfx_volume" type="range" min="0" max="100" value="100" /> SFX Volume </label></p>-->
+			<p><label><input id="sound_enable_btn" type="checkbox" name="checkbox-1" /> Enable Sound </label></p>
 			<h1>Extended</h1>
-			<a id="update_btn" href="#" data-role="button" onClick="updateConfig()" class="ui-disabled">Update Game</a>
+			<a id="update_btn" href="#" data-role="button" class="ui-disabled">Update Game</a>
 			<p><a href="#" data-role="button" onClick="resetGame(true);">End Game</a></p>
 			</div>
 		</div>

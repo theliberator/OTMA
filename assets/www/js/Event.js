@@ -4,9 +4,12 @@
  * EventManager when certain conditions are met. The events are usually called
  * by their id.
  *
- * @author	Michael Seider
- * @version 0.9
- * @since	12.6.2012
+ * Original version 0.9 released on 12.06.2012 by Michael Seider
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Michael Seider, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
 function Event(id)
 {
@@ -14,13 +17,12 @@ function Event(id)
 	this.actions = [];
 };
 
-/* Add an action to the event. */
+/**
+ * Adds an action to the event
+ */
 Event.prototype.addAction = function(a)
 {
-	if (this.actions == undefined)
-		this.actions = [];
-
-	this.actions[this.actions.length] = a;
+	this.actions.push(a);
 };
 
 

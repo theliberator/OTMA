@@ -11,47 +11,72 @@
  * - call EventManager.timeEvent() repeatedly with a timer of about 33 ms
  * - call EventManager.clickEvent() when user clicks on map
  * 
- * @author Ulrich Hornung
- * @version 1.0
- * @since 09.06.2012
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
 
-function EventManager(map, animationMgr, soundModule, dialogMgr, storage, renderer)
+//Use Singleton pattern
+EventManager.getInstance = function()
 {
-	// lock gui while executing events
-    // init event running counter
-	this.event_running = 0;
-
-	this.map = map;
-	this.animationMgr = animationMgr;
-	this.soundModule = soundModule;
-	this.player = map.player;
-	this.dialogMgr = dialogMgr;
-	this.storage = storage;
-	this.renderer = renderer;
-	
-	this.G1Time = 0;
-	this.G1State = 0;
-	this.was_walking = true;
-	
-	this.playerWalkJob = [];
-	
-	this.conditions = {};
-	
-	for (var i in map.init_events)
-		this.executeEventId(map.init_events[i]);
-
-	this.executeEventId("ZERO");
-	
-	if (this.storage.getUnlockedAchievements().length == 0)
-		this.executeEventId("ZERO_II");
+	if (EventManager.instance == undefined) {
+		EventManager.instance = new EventManager();
+	}
+		
+	return EventManager.instance;
 }
 
+function EventManager()
+{
+	con.info('creating EventManager');
+	this.map = Map.getInstance();
+	this.animationMgr = AnimationMgr.getInstance();
+	this.soundModule = SoundModule.getInstance();
+	this.player = this.map.player;
+	this.dialogMgr = DialogMgr.getInstance();
+	this.storage = Storage.getInstance()
+	this.renderer = Renderer.getInstance();
+	
+	this.init();
+}
+
+EventManager.prototype.event_running = 0;
+EventManager.prototype.G1Time = 0;
+EventManager.prototype.G1State = 0;
+EventManager.prototype.was_walking = true;
+EventManager.prototype.playerWalkJob = [];
+EventManager.prototype.conditions = {};
+
+/**
+ * init function
+ */
+EventManager.prototype.init = function() {
+	var self = this;
+	for (var i in self.map.story.initialEvents) {
+		this.executeEventId(self.map.story.initialEvents[i]);
+	}
+
+	self.executeEventId("ZERO");
+	
+	if (self.storage.getUnlockedAchievements().length == 0) {
+		self.executeEventId("ZERO_II");
+	}
+}
+
+/**
+ * registers an event
+ * @param array event the event
+ * @returns 0 if no error, 1 if error
+ */
 EventManager.prototype.registerEvent = function(event)
 {
-	if (this.map.events[event.id] == undefined)
+	var self = this;
+	if (self.map.story.events[event.id] == undefined)
 	{
-		this.map.events[event.id] = event;
+		self.map.story.events[event.id] = event;
 		return 0;
 	} else {
 		con.warning("Event ID: " + event.id + " already registered.");
@@ -91,10 +116,11 @@ EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
 			self.executeEventId(action.value, undefined, nextAction);
 			return;
 		case "set_te_mode":
-			if (contains(["all", "single", "rand"], action.value))
+			if (helper.contains(["all", "single", "rand"], action.value)) {
 				npc.te_mode = action.value;
-			else
+			} else {
 				con.error("talkevent mode not found: " + action.value);
+			}
 			break;
 		case "set_te_cntr_abs":
 			var val = parseInt(action.value);
@@ -109,50 +135,45 @@ EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
 			npc.te_cntr = (npc.te_cntr + val) % npc.talkevents.length;
 			break;
 		case "del_event":
-			if (!map.delEvent(action.value, npc))
+			if (!self.map.delEvent(action.value, npc)) {
 				con.error("talkevent not found: " + action.value.id);
+			}
 			break;
 		case "del_npc":
-			if (!map.delNPC(action.value))
+			if (!self.map.delNPC(action.value)) {
 				con.error("NPC not found: " + action.value);
-			this.renderer.forcedDraw();
+			}
+			self.renderer.forcedDraw();
 			break;
 		case "hint_collected":
-			this.storage.unlockAchievement("HINT_" + action.value, function() {
-				if (self.storage.getUnlockedAchievements().length == self.map.n_hints)
-				{
+			self.storage.unlockAchievement("HINT_" + action.value, function() {
+				if (self.storage.getUnlockedAchievements().length == XMLConfigLoader.getInstance().otma.hints.length) {
 					self.executeEventId("E_ALL_HINTS_COLLECTED", undefined, nextAction);
-				}
-				else
-				{
+				} else {
 					nextAction();
 				}
 			});
 			return;
 		case "check_hints": // called after game start/continue (ZERO-Event)
-			{
-				if (self.storage.getUnlockedAchievements().length == self.map.n_hints)
-				{
-					self.executeEventId("E_ALL_HINTS_COLLECTED", undefined, nextAction);
-				}
-				else
-				{
-					nextAction();
-				}
-				return;
+			if (self.storage.getUnlockedAchievements().length == XMLConfigLoader.getInstance().otma.hints.length) {
+				self.executeEventId("E_ALL_HINTS_COLLECTED", undefined, nextAction);
+			} else {
+				nextAction();
 			}
+			return;
 		case "set_con_rel":
-			var new_value = this.player.concentration + parseInt(action.value); 
+			var new_value = self.player.concentration + parseInt(action.value); 
 			if (new_value < 0) {
-				this.executeEventId("NOT_ENOUGH_CON", undefined, stopEvent);
+				self.executeEventId("NOT_ENOUGH_CON", undefined, stopEvent);
 				return;
 			} else {
-				this.player.concentration = new_value;
+				self.player.concentration = new_value;
 			}
-			if (this.player.concentration > 100)
-				this.player.concentration = 100;
-			con.debug("new concentration value: " + this.player.concentration);
-			$("#statustxt").text(this.player.concentration + "%");
+			if (self.player.concentration > 100) {
+				self.player.concentration = 100;
+			}
+			con.debug("new concentration value: " + self.player.concentration);
+			$("#statustxt").text(self.player.concentration + "%");
 			break;
 		case "set_location":
 			var str = "";
@@ -166,69 +187,71 @@ EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
 			break;
 		case "set_location_hallway":
 			var locationElement = (document.getElementById("location"));
-			locationElement.innerHTML = "Level " + this.map.player.z + " Hallway";
+			locationElement.innerHTML = "Level " + self.map.player.z + " Hallway";
 			break;
 		case "set_cond":
-			this.conditions[action.value] = true;
+			self.conditions[action.value] = true;
 			break;
 		case "unset_cond":
-			this.conditions[action.value] = false;
+			self.conditions[action.value] = false;
 			break;
 		case "dialog":
 		case "split_dialog":
-			this.renderer.draw();
+			self.renderer.draw();
 			var dialog = new Dialog("talk", action.headline, action.img, action.text, nextAction);
-			this.dialogMgr.openDialog(dialog);
+			self.dialogMgr.openDialog(dialog);
 			return; // continue with actions after dialog ends
 		case "linear_dialog":
-			if (event.dialog_cntr == undefined)
+			if (event.dialog_cntr == undefined) {
 				event.dialog_cntr = 0;
+			}
 			var dialog = new Dialog("talk", 
 					action.headline, action.img, action.text[event.dialog_cntr], nextAction);
-			this.dialogMgr.openDialog(dialog);
+			self.dialogMgr.openDialog(dialog);
 			event.dialog_cntr = (event.dialog_cntr + 1) % action.text.length;
 			return; // continue with actions after dialog ends
 		case "random_dialog":
 			var ran = rand(0, action.text.length);
 			var dialog = new Dialog("talk", 
 					action.headline, action.img, action.text[ran], nextAction);
-			this.dialogMgr.openDialog(dialog);
+			self.dialogMgr.openDialog(dialog);
 			return; // continue with actions after dialog ends
 		case "change_level":
-			this.player.z += parseInt(action.value);
-			if (this.player.z > this.map.levels.length)
-				this.player.z = this.map.levels.length;
-			else if (this.player.z < 0)
-				this.player.z = 0;
-			con.debug("level: " + this.player.z);
-			this.renderer.forcedDraw();
+			self.player.z += parseInt(action.value);
+			if (self.player.z > self.map.story.levels.length) {
+				self.player.z = self.map.story.levels.length;
+			} else if (self.player.z < 0) {
+				 self.player.z = 0;
+			 }
+			con.debug("level: " + self.player.z);
+			self.renderer.forcedDraw();
 			break;
 		case "teleport":
-			this.teleportPlayer(action.to, action.direction);
+			self.teleportPlayer(action.to, action.direction);
 			break;
 		case "walk":
-			this.playerWalkJob.push(action.direction);
+			self.playerWalkJob.push(action.direction);
 			break;
 		case "look":
-			this.map.player.icon = this.map.player.ani_walk[action.direction][0];
+			self.map.player.icon = self.map.player.ani_walk[action.direction][0];
 			break;
 		case "stop":
-			this.playerWalkJob = [];
+			self.playerWalkJob = [];
 			break;
 		case "sleep":
 			setTimeout(nextAction, action.value);
 			return; // continue with actions after sleep ends
 		case "new_highscore":
-			this.storage.saveHighscore(this.player.name);
+			self.storage.saveHighscore(this.player.name);
 			break;
 		case "show_highscore":
 			$.mobile.changePage( "#highscore", {} );
 			break;
 		case "play_sound":
-			playSfx(action.value);
+			SoundModule.getInstance().playSfx(action.value);
 			break;
 		case "play_sound_gender":
-			playSfx(action.value + (this.player.gender == "female" ? "Female" : "Male"));
+			SoundModule.getInstance().playSfx(action.value + (this.player.gender == "female" ? "Female" : "Male"));
 			break;
 		default:
 			con.error("unknown action type:" + action);
@@ -241,7 +264,7 @@ EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
 
 EventManager.prototype.executeEventId = function(id, npc, onFinish)
 {
-	var event = this.map.events[id];
+	var event = this.map.story.events[id];
     event.mEventID = id;
 	
 	// at start: disable clickEvent:
@@ -254,37 +277,44 @@ EventManager.prototype.executeEventId = function(id, npc, onFinish)
 	this.recur_action_execute(0, event, npc, onFinish); 
 };
 
+/**
+ * starts a time event
+ */
 EventManager.prototype.timeEvent = function(time)
 {
+	var self = this;
 	// stop animations when dialog is open
-	if (this.dialogMgr.hasActiveDialog()) return;
-
-	
+	if (this.dialogMgr.hasActiveDialog()) {
+		return;
+	}
 	
 	if (
-			(this.playerWalkJob.length > 0) && 
-			((this.playerWalkAni == undefined) || (this.playerWalkAni.ready == true))
+			(self.playerWalkJob.length > 0) && 
+			((self.playerWalkAni == undefined) || (self.playerWalkAni.ready == true))
 		)
 	{
-		this.processNextPlayerWalkJob();
-		this.was_walking = true;
+		self.processNextPlayerWalkJob();
+		self.was_walking = true;
 	}
 	else
 	{
 	}
 
 	if (
-			(this.playerWalkJob.length == 0) && (this.was_walking == true) &&
-			((this.playerWalkAni == undefined) || (this.playerWalkAni.ready == true))
+			(self.playerWalkJob.length == 0) && (self.was_walking == true) &&
+			((self.playerWalkAni == undefined) || (self.playerWalkAni.ready == true))
 		)
 	{
-		this.renderer.look_offset_x = 0;
-		this.renderer.look_offset_y = 0;
-		this.renderer.calcPosFromPlayerPos(this.player.x, this.player.y);
-		this.was_walking = false;
+		self.renderer.look_offset_x = 0;
+		self.renderer.look_offset_y = 0;
+		self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
+		self.was_walking = false;
 	}
 };
 
+/**
+ * teleports a player
+ */
 EventManager.prototype.teleportPlayer = function(to, direction)
 {
 	this.playerWalkJob = [];
@@ -306,14 +336,16 @@ EventManager.prototype.recur_event_execution = function(nr, events, npc)
 
     var nextEvent = function() { self.recur_event_execution(nr+1, events, npc); };
 
-    if (nr >= events.length)
-        return;
+    if (nr >= events.length) {
+    	return;
+    }
 
     var e = events[nr];
-	if (this.checkCondition(e.condition))
+	if (this.checkCondition(e.condition)) {
 		this.executeEventId(e.id, npc, nextEvent);
-    else
+	} else {
         nextEvent();
+	}
 };
 
 EventManager.prototype.executeEventListWithCond = function(events, npc)
@@ -390,7 +422,7 @@ EventManager.prototype.clickEvent = function(pos)
 		
 		// Richard: Beep sound evtl. (position nicht erreichbar)
 		// play error sound
-		playSfx("error");
+		SoundModule.getInstance().playSfx("error");
 	}
 };
 

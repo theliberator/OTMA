@@ -10,374 +10,331 @@
  * @author	Michael Seider
  * @version 0.9
  * @since	19.5.2012
+ * 
+ * Original version 0.9 released on 19.05.2012 by Michael Seider
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Michael Seider, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
-function XMLConfigLoader()
+
+// Use Singleton pattern
+XMLConfigLoader.getInstance = function()
 {
-	this.otma = {};
-	this.otma.persons = [];
-	this.otma.otma_events = [];
-	this.otma.hints = [];
-	this.otma.roomsLayoutUpper = [];
-	this.otma.roomsLayoutLower = {};
-	this.otma.entry_teleports = [];
-	this.otma.teleports = [];
-	this.map = {};
-	this.map.teleports = {};
-	this.map.ets = {};
-	this.map.npcs = [];
-	this.map.events = {};
+	if (XMLConfigLoader.instance == undefined) 
+		XMLConfigLoader.instance = new XMLConfigLoader();
+		
+	return XMLConfigLoader.instance;
+}
+
+function XMLConfigLoader() {
+	var configFilename = 'otma-config.xml';
+	var layoutFilename = 'mapLayout.xml';
+	var mapEventsFilename = 'mapEvents.xml';
+	
+	this.getConfigFilename = function() {
+		return configFilename;
+	};
+	this.getLayoutFilename = function() {
+		return layoutFilename;
+	};
+	this.getMapEventsFilename = function() {
+		return mapEventsFilename;
+	};
+};
+//variables
+XMLConfigLoader.prototype.otma = {
+	persons: [],
+	otma_events: [],
+	hints: [],
+	roomsLayoutUpper: [],
+	roomsLayoutLower: [],
+	entry_teleports: [],
+	teleports: []
+};
+
+XMLConfigLoader.prototype.map = {
+	teleports: {},
+	ets: {},
+	npcs: [],
+	events: {}
 };
 
 XMLConfigLoader.prototype.Values = {
 	XMLNodeTypeText: 3
 };
 
-/* Helper functions. */
-parsePos = function(pos)
-{
-	if (pos == null)
-		return null;
-	
-	var a = pos.split(",");
-	var x = parseInt(a[0]);
-	var y = parseInt(a[1]);
-	var z = parseInt(a[2]);
-	return { x:x, y:y, z:z };
-};
-
-/* Parsing functions. */
-XMLConfigLoader.prototype.parsePersons = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("person");
-
-	for (var i = 0; i < tags.length; i++)
-	{
-		var tag = tags[i];
-
-		var person = {};
-
-		person.name = tag.getAttribute("name");
-		person.title = tag.getAttribute("title");
-		person.img = "img/fotos/" + person.name + ".jpg";
-		person.gender = tag.getAttribute("gender");
-		introTag = tag.getElementsByTagName("introduction")[0];
-		person.introduction = introTag.firstChild.data;
-
-		this.otma.persons[i] = person;
-	}
-};
-
-
-XMLConfigLoader.prototype.parseOtmaEvents = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("conference");
-
-	var i = 0;
-	for (; i < tags.length; i++)
-	{
-		var tag = tags[i];
-
-		var otma_event = {};
-
-		otma_event.type = "conference";
-		otma_event.title = tag.getAttribute("title");
-		descrTag = tag.getElementsByTagName("description")[0];
-		otma_event.description = descrTag.firstChild.data;
-
-		this.otma.otma_events[i] = otma_event;
-	}
-
-	tags = xmlDoc.getElementsByTagName("workshop");
-
-	for (var j = 0; j < tags.length; j++, i++)
-	{
-		var tag = tags[j];
-
-		var otma_event = {};
-
-		otma_event.type = "workshop";
-		otma_event.title = tag.getAttribute("title");
-		descrTag = tag.getElementsByTagName("description")[0];
-		otma_event.description = descrTag.firstChild.data;
-
-		this.otma.otma_events[i] = otma_event;
-	}
-};
-
-XMLConfigLoader.prototype.parseHints = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("hint");
-
-	for (var i = 0; i < tags.length; i++)
-	{
-		var tag = tags[i];
-
-		var hint = {};
-
-		hint.title = tag.getAttribute("title");
-		if (tag.firstChild != null)
-			hint.text = tag.firstChild.data;
-
-		this.otma.hints[i] = hint;
-	}
-};
-
-XMLConfigLoader.prototype.parseOtmaInfo = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("otmainfo");
-
-	var e = new Event("E_OTMA_INFO");
-	var action = {};
-	action.type = "dialog";
-	action.img = "img/otma_logo_s.jpg";
-	action.text = "ERROR in config-file: <otmainfo>-tag is empty or does not exist!"
-	if (tags[0].firstChild != null) {
-		//if (actionTag.firstChild.nodeType == this.Values.XMLNodeTypeText)
-		action.text = tags[0].firstChild.data;
-	}
-	e.addAction(action);
-	this.map.events[e.id] = e;
-};
-
-XMLConfigLoader.prototype.parseRoomsLayout = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("entry_tp");
-
-	for (var i = 0; i < tags.length; i++) {
-		var etp = {};
-
-		var tag = tags[i];
-		etp.id = tag.getAttribute("id");
-		this.otma.entry_teleports[i] = etp;
-	}
-
-	var tags = xmlDoc.getElementsByTagName("stairs");
-
-	for (var i = 0; i < tags.length; i++) {
-		var tp = {};
-
-		var tag = tags[i];
-		tp.from = parsePos(tag.getAttribute("from"));
-		tp.to = parsePos(tag.getAttribute("to"));
-		tp.direction = tag.getAttribute("direction");
-		tp.level = tag.getAttribute("level");
-		this.otma.teleports[i] = tp;
-	}
-
-	var tags = xmlDoc.getElementsByTagName("room");
-
-	for (var i = 0, u = 0; i < tags.length; i++)
-	{
-		var tag = tags[i];
-
-		var room = {};
-
-		room.nr = tag.getAttribute("nr");
-
-		if (room.nr == "otma") {
-			var chairs = [];
-			var chairTags = tag.getElementsByTagName("chair");
-			for (var j = 0; j < chairTags.length; j++)
-			{
-				var chair = {};
-				var chairTag = chairTags[j];
-				chair.pos = parsePos(chairTag.getAttribute("pos"));
-				chairs[j]= chair;
-			}
-			room.chairs = chairs;
-
-			this.otma.roomsLayoutLower = room;
-		} else {
-			var door_in = {};
-			var tagIn = tag.getElementsByTagName("door_in")[0];
-			door_in.from = parsePos(tagIn.getAttribute("from"));
-			door_in.to = parsePos(tagIn.getAttribute("to"));
-			door_in.direction = tagIn.getAttribute("direction");
-			room.door_in = door_in;
-
-			var door_out = {};
-			var tagOut = tag.getElementsByTagName("door_out")[0];
-			door_out.from = parsePos(tagOut.getAttribute("from"));
-			door_out.to = parsePos(tagOut.getAttribute("to"));
-			door_out.direction = tagOut.getAttribute("direction");
-			room.door_out = door_out;
-
-			var lecturer = {};
-			var lectTag = tag.getElementsByTagName("lecturer")[0];
-			lecturer.pos = parsePos(lectTag.getAttribute("pos"));
-			room.lecturer = lecturer;
-
-			var chairs = [];
-			var chairTags = tag.getElementsByTagName("chair");
-			for (var j = 0; j < chairTags.length; j++)
-			{
-				var chair = {};
-				var chairTag = chairTags[j];
-				chair.pos = parsePos(chairTag.getAttribute("pos"));
-				chairs[j]= chair;
-			}
-			room.chairs = chairs;
-
-			this.otma.roomsLayoutUpper[u++] = room;
-		}
-	}
-};
-
-XMLConfigLoader.prototype.parseNPCs = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("npc");
-	
-	for (var nr = 0; nr < tags.length; nr++)
-	{
-		var tag = tags[nr];
-		
-		var npc = new NPC(tag.getAttribute("id"),
-				tag.getAttribute("class"),
-				tag.getAttribute("name"),
-				{x:parseInt(tag.getAttribute("x")), y:parseInt(tag.getAttribute("y"))},
-				tag.getAttribute("direction"),
-				tag.getAttribute("npc_typ"),
-				tag.getAttribute("te_mode")
-				);
-		
-		var evl = tag.getElementsByTagName("talkevent");
-
-		for (var enr = 0; enr < evl.length; enr++)
-		{
-			var etag = evl[enr];
-			npc.addEvent({id:etag.getAttribute("id"), condition:etag.getAttribute("condition")});
-		}
-		
-		this.map.npcs[npc.id] = npc;
-	}
-};
-
-XMLConfigLoader.prototype.parseEventTriggers = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("eventtrigger");
-	
-	for (var nr = 0; nr < tags.length; nr++)
-	{
-		var tag = tags[nr];
-		
-		var et = new EventTrigger(tag.getAttribute("id"),
-				{x:parseInt(tag.getAttribute("x")), y:parseInt(tag.getAttribute("y"))},
-				tag.getAttribute("onwalkover"));
-
-		var eventTags = tag.getElementsByTagName("event");
-		
-		for (var i = 0; i < eventTags.length; i++)
-		{
-			var etag = eventTags[i];
-			et.addEvent({id:etag.getAttribute("id"), condition:etag.getAttribute("condition")});
-		}
-
-		this.map.ets[et.id] = et;
-	}
-};
-
-XMLConfigLoader.prototype.parseTeleports = function(xmlDoc)
-{
-	var tags = xmlDoc.getElementsByTagName("teleport");
-	
-	for (var nr = 0; nr < tags.length; nr++)
-	{
-		var tag = tags[nr];
-		
-		var tp = new Teleport(tag.getAttribute("id"),
-				parsePos(tag.getAttribute("from")),
-				parsePos(tag.getAttribute("to")),
-				tag.getAttribute("direction"),
-				tag.getAttribute("onwalkover"));
-
-		var eventTags = tag.getElementsByTagName("event");
-		
-		for (var i = 0; i < eventTags.length; i++)
-		{
-			var etag = eventTags[i];
-			tp.addEvent({id:etag.getAttribute("id"), condition:etag.getAttribute("condition")});
-		}
-
-		this.map.teleports[tp.id] = tp;
-	}
-};
-
-XMLConfigLoader.prototype.parseEvents = function(xmlDoc)	
-{
-	var tags = xmlDoc.getElementsByTagName("event");
-	
-	for (var nr = 0; nr < tags.length; nr++)
-	{
-		var tag = tags[nr];
-		
-		var event = new Event(tag.getAttribute("id"));
-		
-		var childTags = tag.getElementsByTagName("action");
-		
-		for (var anr = 0; anr < childTags.length; anr++)
-		{
-			var actionTag = childTags[anr];
-			var action = {};
-			action.type = actionTag.getAttribute("type");
-			action.value = actionTag.getAttribute("value");
-			action.headline = actionTag.getAttribute("headline");
-			action.img = actionTag.getAttribute("img");
-			action.to = parsePos(actionTag.getAttribute("to"));
-			action.direction = actionTag.getAttribute("direction");
-			if (actionTag.firstChild != null) {
-				//if (actionTag.firstChild.nodeType == this.Values.XMLNodeTypeText)
-				if (action.type == "dialog")
-					action.text = actionTag.firstChild.data;
-				else {
-					var textTags = actionTag.getElementsByTagName("text");
-					action.text = [];
-					for (var i = 0; i < textTags.length; i++)
-						action.text[i] = textTags[i].firstChild.data;
-				}
-			}
-
-			event.addAction(action);
-		}
-		
-		this.map.events[event.id] = event;
-	}
-};
-
-/* Load and parse otma config related stuff. */
-XMLConfigLoader.prototype.loadOtmaXML = function(filename, callback)
+/**
+ * Loads the otma xml config file
+ * @param string path path to the config file
+ * @param function callback function that will be called after the load has finished
+ */
+XMLConfigLoader.prototype.loadOtmaXML = function(path, callback)
 {
     var self = this;
+    con.debug('loading otma xml file: ' + path + self.getConfigFilename());
 
-	loadXMLDoc(filename, function(xmlDoc) {
-	    self.parsePersons(xmlDoc);
-	    self.parseOtmaEvents(xmlDoc);
-	    self.parseHints(xmlDoc);
-	    self.parseOtmaInfo(xmlDoc);
-        callback();
-    });
+	$.get(path + self.getConfigFilename(), function(data) {
+		//data contains the xml file as document object. Use $(data) for jquery
+		//persons:
+		$(data).find('person').each(function() {
+			self.otma.persons.push({
+				name: $(this).attr('name'),
+				title: $(this).attr('title'),
+				img: 'img/fotos/' + $(this).attr('name') + '.jpg',
+				gender: $(this).attr('gender'),
+				introduction: $(this).find('introduction').text()
+			});
+		});
+		
+		//events
+		$(data).find('conference').each(function() {
+			self.otma.otma_events.push({
+				type: 'conference',
+				title: $(this).attr('title'),
+				description: $(this).find('description').text()
+			});
+		});
+		$(data).find('workshop').each(function() {
+			self.otma.otma_events.push({
+				type: 'workshop',
+				title: $(this).attr('title'),
+				description: $(this).find('description').text()
+			});
+		});
+		
+		//hints
+		$(data).find('hint').each(function() {
+			self.otma.hints.push({
+				title: $(this).attr('title'),
+				text: $(this).find('text').text()
+			});
+		});
+		
+		//otma_info
+		$(data).find('otmainfo').each(function() {
+			var e = new Event("E_OTMA_INFO");
+			var action = {
+				type: 'dialog',
+				img: 'img/otma_logo_s.jpg',
+				text: $(this).find('text').text()
+			};
+			e.addAction(action);
+			self.map.events[e.id] = e;
+		});
+		
+		callback();
+	});
 };
 
-/* Load and parse map layout related stuff. */
-XMLConfigLoader.prototype.loadLayoutXML = function(filename, callback)
+/**
+ * Loads the map layout related stuff
+ * @param string path path to the xml file
+ * @param function callback function that will be called after the load has finished
+ */
+XMLConfigLoader.prototype.loadLayoutXML = function(path, callback)
 {
 	var self = this;
+	con.debug('loading layout xml file: ' + path + self.getLayoutFilename());
 
-	loadXMLDoc(filename, function(xmlDoc) {
-	    self.parseNPCs(xmlDoc);
-	    self.parseTeleports(xmlDoc);
-	    self.parseEventTriggers(xmlDoc);
-	    self.parseRoomsLayout(xmlDoc);
-        callback();
-    });
+	$.get(path + self.getLayoutFilename(), function(data) {
+		//data contains the xml file as document object. Use $(data) for jquery
+		//npcs
+		$(data).find('npc').each(function() {
+			var npc = new NPC(
+					$(this).attr('id'),
+					$(this).attr('class'),
+					$(this).attr('name'),
+					{
+						x: parseInt($(this).attr('x')),
+						y: parseInt($(this).attr('y')),
+					},
+					$(this).attr('direction'),
+					$(this).attr('npc_typ'),
+					$(this).attr('te_mode')
+				);
+			
+			$(this).find('talkevent').each(function() {
+				npc.addEvent({
+						id: $(this).attr('id'),
+						condition: $(this).attr('condition')
+					});
+			});
+			
+			self.map.npcs[npc.id] = npc;
+		});
+		
+		//teleports
+		$(data).find('teleport').each(function() {
+			var teleport = new Teleport(
+					$(this).attr('id'),
+					{
+						x: parseInt($(this).attr('from').split(',')[0]),
+						y: parseInt($(this).attr('from').split(',')[1]),
+						z: parseInt($(this).attr('from').split(',')[2])
+					},
+					{
+						x: parseInt($(this).attr('to').split(',')[0]),
+						y: parseInt($(this).attr('to').split(',')[1]),
+						z: parseInt($(this).attr('to').split(',')[2])
+					},
+					$(this).attr('direction'),
+					$(this).attr('onwalkover')
+				);
+			
+			$(this).find('event').each(function() {
+				teleport.addEvent({
+						id: $(this).attr('id'),
+						condition: $(this).attr('condition')
+					});
+			});
+			
+			self.map.teleports[teleport.id] = teleport;
+		});
+		
+		//eventTriggers
+		$(data).find('eventtrigger').each(function() {
+			var eventTrigger = new EventTrigger(
+					$(this).attr('id'),
+					{
+						x: parseInt($(this).attr('x')),
+						y: parseInt($(this).attr('y'))
+					},
+					$(this).attr('onwalkover')
+				);
+			
+			$(this).find('event').each(function() {
+				eventTrigger.addEvent({
+					id: $(this).attr('id'),
+					condition: $(this).attr('condition')
+				});
+			});
+			
+			self.map.ets[eventTrigger.id] = eventTrigger;
+		});
+		
+		//room layout
+		$(data).find('entry_tp').each(function() {
+			self.otma.entry_teleports.push({
+				id: $(this).attr('id')
+			});
+		});
+		$(data).find('stairs').each(function() {
+			self.otma.teleports.push({
+				from: {
+					x: parseInt($(this).attr('from').split(',')[0]),
+					y: parseInt($(this).attr('from').split(',')[1]),
+					z: parseInt($(this).attr('from').split(',')[2])
+				},
+				to: {
+					x: parseInt($(this).attr('to').split(',')[0]),
+					y: parseInt($(this).attr('to').split(',')[1]),
+					z: parseInt($(this).attr('to').split(',')[2])
+				},
+				direction: $(this).attr('direction'),
+				level: $(this).attr('level'),
+			});
+		});
+		$(data).find('room').each(function() {
+			var room = {
+				nr: $(this).attr('nr'),
+				chairs: []
+			};
+			
+			$(this).find('chair').each(function() {
+				room.chairs.push({
+					pos: {
+						x: parseInt($(this).attr('pos').split(',')[0]),
+						y: parseInt($(this).attr('pos').split(',')[1]),
+						z: parseInt($(this).attr('pos').split(',')[2])
+					}
+				})
+			});
+			
+			if (room.nr == 'otma') {
+				self.otma.roomsLayoutLower.push(room);
+			} else {
+				room.door_in = {
+						from: {
+							x: parseInt($(this).find('door_in').attr('from').split(',')[0]),
+							y: parseInt($(this).find('door_in').attr('from').split(',')[1]),
+							z: parseInt($(this).find('door_in').attr('from').split(',')[2])
+						},
+						to: {
+							x: parseInt($(this).find('door_in').attr('to').split(',')[0]),
+							y: parseInt($(this).find('door_in').attr('to').split(',')[1]),
+							z: parseInt($(this).find('door_in').attr('to').split(',')[2])
+						},
+						direction: $(this).find('door_in').attr('direction')
+				};
+				room.door_out = {
+						from: {
+							x: parseInt($(this).find('door_out').attr('from').split(',')[0]),
+							y: parseInt($(this).find('door_out').attr('from').split(',')[1]),
+							z: parseInt($(this).find('door_out').attr('from').split(',')[2])
+						},
+						to: {
+							x: parseInt($(this).find('door_out').attr('to').split(',')[0]),
+							y: parseInt($(this).find('door_out').attr('to').split(',')[1]),
+							z: parseInt($(this).find('door_out').attr('to').split(',')[2])
+						},
+						direction: $(this).find('door_out').attr('direction')
+				};
+				room.lecturer = {
+						pos: {
+							x: parseInt($(this).find('lecturer').attr('pos').split(',')[0]),
+							y: parseInt($(this).find('lecturer').attr('pos').split(',')[1]),
+							z: parseInt($(this).find('lecturer').attr('pos').split(',')[2])
+						}
+				};
+				self.otma.roomsLayoutUpper.push(room);
+			}
+		});
+		callback();
+	});
 };
 
 /* Load and parse map events related stuff. */
-XMLConfigLoader.prototype.loadEventsXML = function(filename, callback)
+XMLConfigLoader.prototype.loadEventsXML = function(path, callback)
 {
 	var self = this;
+	con.debug('loading event xml file: ' + path + self.getMapEventsFilename());
 
-	loadXMLDoc(filename, function(xmlDoc) {
-	    self.parseEvents(xmlDoc);
-        callback();
-    });
+	$.get(path + self.getMapEventsFilename(), function(data) {
+		//data contains the xml file as document object. Use $(data) for jquery
+		//events
+		$(data).find('event').each(function() {
+			var event = new Event($(this).attr('id'));
+			
+			$(this).find('action').each(function() {
+				var action = {
+					type: $(this).attr('type'),
+					value: $(this).attr('value'),
+					headline: $(this).attr('headline'),
+					img: $(this).attr('img'),
+					to: {
+    					x: ($(this).attr('to') != undefined ? parseInt($(this).attr('to').split(',')[0]) : null),
+    					y: ($(this).attr('to') != undefined ? parseInt($(this).attr('to').split(',')[1]) : null),
+    					z: ($(this).attr('to') != undefined ? parseInt($(this).attr('to').split(',')[2]) : null)
+    				},
+    				direction: $(this).attr('direction'),
+    				text: []
+				};
+//				if (this.firstChild != null) {
+					if(action.type == 'dialog') {
+						action.text = this.firstChild.data;
+					} else {
+						$(this).find('text').each(function() {
+							action.text.push($(this).text());
+						});
+					}
+//				}
+				event.addAction(action);
+			});
+			self.map.events[event.id] = event;
+		});
+		callback();
+	});
+	
 };

@@ -4,31 +4,33 @@
  * even if the player just walks over the field on the map (not directly
  * clicking on the field) by setting the owo parameter to "yes".
  *
- * @author	Michael Seider
- * @version 0.9
- * @since	12.6.2012
+ * Original version 0.9 released on 12.06.2012 by Michael Seider
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Michael Seider, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
-function EventTrigger(id, pos, owo)
+function EventTrigger(id, pos, onWalkOver)
 {
 	this.id = id;
 	this.x = pos.x;
 	this.y = pos.y;
-	if (owo == "yes")
+	this.onWalkOver = false;
+	if (onWalkOver == "yes") {
 		this.onWalkOver = true;
-	else
-		this.onWalkOver = false;
+	}
 	this.events = [];
 };
 
-/* Add an event to the EventTrigger. This will trigger the Event with the field
- * "id" of the passed event e if the condition in the "condition" field of e is
- * met. */
+/**
+ * Add an event to the EventTrigger. This will trigger the Event with the field
+ * "id" of the passed event e if the condition in the "condition" field of e is met.
+ * @param array e the event to add
+ */
 EventTrigger.prototype.addEvent = function(e)
 {
-	if (this.events == undefined)
-		this.events = [];
-
-	this.events[this.events.length] = e;
+	this.events.push(e);
 };
 
 

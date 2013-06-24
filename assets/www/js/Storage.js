@@ -6,181 +6,67 @@
  * Saving takes the this.data object (containing hints, highscores and the current player),
  * stringifys the object and saves it to the local storage. Loading is done vice-versa.
  * 
- * @author Tobias Sielaff
- * @version 1.0
- * @since 09.06.2012
+ * Rewritten by Sebastian Pabel on 22.06.2013
+ * 
+ * @author Tobias Sielaff, Sebastian Pabel
+ * @version 2.0
+ * @since 22.06.2013
  */
 
-function Storage()
+// Use Singleton pattern
+Storage.getInstance = function()
 {
-	var self = this;
-	
-	// Achievements.
-	this.achievements = {};
-	
-	// Highscore Constants
-	this.setHighscoreConstants();
-	
-	// Init.
-	if (localStorage.data != null)
-		this.load();
-	else
-		this.reset(false);
+	if (Storage.instance == undefined) 
+		Storage.instance = new Storage();
 		
-	// Pages not yet init.
-	initPages = false;
-	
-	// Add event listner for saving.
-	document.addEventListener("pause", function() { self.save() }, false);
-	document.addEventListener("startcallbutton", function() { self.save() }, false);
-	
-	// Add page hooks.
-	$(document).bind( "pagebeforechange", function(e, data) {
-		if (typeof data.toPage === "string") {
-			var url = $.mobile.path.parseUrl( data.toPage );
-			if (url.hash == "#menuhints") {	
-				var $page = $(url.hash),
-					$content = $page.children( ":jqmData(role=content)" );
-				
-				if (!self.initPages) {
-					// Setup checkboxes.
-					for (name in self.achievements) {
-						// Create selector (no # because of stupid jquery syntax)
-						var sel = "hint_" + self.achievements[name].id;	
-						
-						// Set label.
-						$("label[for='" + sel + "']").text(self.achievements[name].name);
-						
-						// Prevent manual changes
-						$("#" + sel).change(function () {
-							$(this).attr("checked", !this.checked);
-						});
-						
-						// Give desc
-						$("#" + sel).click(function () {
-							id = $(this).attr('id');
-							ach = self.achievements[id.toUpperCase()];
-									
-							if (self.hasUnlockedAchievement(ach.id)) {
-								// http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
-								exp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
-								url = ach.desc.match(exp) + "";
-								
-								// Phonegap present?
-								if (navigator.notification) {
-									// Native confirm dialog.
-									navigator.notification.confirm(
-										'Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!',
-										function(button) {	
-											// Navigate.
-											if (button == 1) {
-												// Save game state.
-												self.save();
-												
-												// 1 == ok, 2 == cancel
-												navigator.app.loadUrl(url, { openExternal: true });
-											}
-										},
-										'Confirm', 
-										'Ok,Cancel'
-									);
-								}
-								else {
-									ret = confirm('Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!');
-									if (ret)
-										window.location = url;
-								}
-							}
-						});
-					}
-					
-					self.initPages = true;
-				}
-				
-				// Enhance the page.
-				$page.page();
-				
-				// Mark completed achievements.
-				for (name in self.achievements) {
-					if (self.hasUnlockedAchievement(self.achievements[name].id)) {
-						// Create selector
-						var sel = "#hint_" + self.achievements[name].id;
-						$(sel).attr("checked", true).checkboxradio("refresh");
-					}
-				}
-								
-				// Now call changePage() and tell it to switch to
-				// the page we just modified.
-				$.mobile.changePage( $page );
-					
-				// Make sure to tell changePage() we've handled this call so it doesn't
-				// have to do anything.
-				e.preventDefault();
-			}
-			else if (url.hash == "#menustats") {
-				var $page = $(url.hash),
-					$content = $page.children( ":jqmData(role=content)" );
-
-				// Update time before drawing.
-				self.updateTime();
-
-				// Print.
-				$("label[for='stats-1']").text(self.getPlayedTime() + " seconds");
-				$("label[for='stats-2']").text(self.getSteps());
-				$("label[for='stats-3']").text(self.getClicks());
-				$("label[for='stats-4']").text(self.getDialogs());
-				
-				// Enhance the page.
-				$page.page();
-				
-				// Now call changePage() and tell it to switch to
-				// the page we just modified.
-				$.mobile.changePage( $page );
-				
-				// Make sure to tell changePage() we've handled this call so it doesn't
-				// have to do anything.
-				e.preventDefault();
-			}
-			else if (url.hash == "#highscore") {
-				var $page = $(url.hash),
-					$content = $page.children( ":jqmData(role=content)" );
-				
-				self.clearHighscoreView();
-				self.createHighscoreView(self);
-	
-				// Now call changePage() and tell it to switch to
-				// the page we just modified.
-				$.mobile.changePage( $page );
-				
-				// Make sure to tell changePage() we've handled this call so it doesn't
-				// have to do anything.
-				e.preventDefault();
-			}
-		}
-	});
+	return Storage.instance;
 }
 
-Storage.prototype.initHints = function(xml)
+//Constructor
+function Storage()
 {
-	// Load achievements.
-	for (var i in xml.otma.hints) {
-		var hint = {};
-		hint.id = i;
-		hint.name = xml.otma.hints[i].title;
-		hint.desc = xml.otma.hints[i].text;
-		this.achievements["HINT_" + i] = hint;
+	// Init.
+	if (localStorage.data.length > 0) {
+		this.load();
+	} else {
+		this.reset(false);
 	}
 }
 
+//Achievements.
+Storage.prototype.achievements = {};
+//Pages not yet init.
+Storage.prototype.isPagesInit = false;
+//Data
+Storage.prototype.data = null;
+Storage.prototype.lastTime = null;
+
+//Highscore constants
+Storage.prototype.weightTime = 0.00001;
+Storage.prototype.weightSteps = 0.0001;
+Storage.prototype.weightClicks = 0.0002;
+Storage.prototype.weightDialogs = 0.0003;
+Storage.prototype.maxScore = 10000;
+Storage.prototype.minScore = 100;
+
+/**
+ * saves data to the local storage
+ */
 Storage.prototype.save = function()
-{	
+{
+	//we dont use "this" in here, because this method will be called by an event handler. And "this" would be
+	//the event in this scope
+	
 	// Update time before saving.
-	this.updateTime();
+	Storage.getInstance().updateTime();
 	
 	// Save.
-	localStorage.data = JSON.stringify(this.data);
+	localStorage.data = JSON.stringify(Storage.getInstance().data);
 };
 
+/**
+ * Loads data from the local storage
+ */
 Storage.prototype.load = function()
 {
 	// Load.
@@ -191,9 +77,16 @@ Storage.prototype.load = function()
 	this.lastTime = d.getTime();
 };
 
+/**
+ * Resets the local storage
+ * calls save afterwards
+ * @param bool retainHighscores if set to true the highscores will be kept
+ * @see Storage.save()
+ */
 Storage.prototype.reset = function(retainHighscores)
 {
-	this.data = {
+	var self = this;
+	self.data = {
 		stats: {
 			curTime: 0,
 			curSteps: 0,
@@ -216,31 +109,305 @@ Storage.prototype.reset = function(retainHighscores)
 	
 	if (retainHighscores) {
 		// Load local storage.
+		
+		if (localStorage.data.length == 0) {
+			return; //nothing to load
+		}
 		var data = JSON.parse(localStorage.data);
 		
-		// Safety first.
-		if (data == null)
-			return;
-		
 		// Null out everything but the highscores.
-		this.data.highscores = data.highscores;
+		self.data.highscores = data.highscores;
 	}
 	
 	// Save.
 	this.save();
-}
+};
 
+/**
+ * Inits the pages and sets isPagesInit to true if successfull
+ */
+Storage.prototype.initPages = function() {
+	var self = this;
+	// Setup checkboxes.
+	for (name in self.achievements) {
+		// Create selector (no # because of stupid jquery syntax)
+		var sel = "hint_" + self.achievements[name].id;	
+		
+		// Set label.
+		$("label[for='" + sel + "']").text(self.achievements[name].name);
+		
+		// Prevent manual changes
+		$("#" + sel).change(function () {
+			$(this).attr("checked", !this.checked);
+		});
+		
+		// Give desc
+		$("#" + sel).click(function () {
+			ach = self.achievements[$(this).attr('id').toUpperCase()];
+					
+			if (self.hasAchievementUnlocked(ach.id)) {
+				// http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+				var regExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+				var url = ach.desc.match(regExp) + "";
+				
+				// Phonegap present?
+				if (navigator.notification) {
+					// Native confirm dialog.
+					navigator.notification.confirm(
+						'Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!',
+						function(button) {	
+							// 1 == ok, 2 == cancel
+							if (button == 1) {
+								// Save game state.
+								self.save();
+								
+								//only android supports the navigator.app api
+								if (device.platform == 'Android') {
+									navigator.app.loadUrl(url, { openExternal: true });
+								} else {
+									window.location.href = url;
+								}
+							}
+						},
+						'Confirm', 
+						'Ok,Cancel'
+					);
+				} else {
+					ret = confirm('Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!');
+					if (ret) {
+						window.location = url;
+					}
+				}
+			}
+		});
+	}
+	
+	self.isPagesInit = true;
+};
+
+/**
+ * Marks the unlocked achievements
+ */
+Storage.prototype.markUnlockedAchievements = function() {
+	var self = this;
+	for (name in self.achievements) {
+		if (self.hasAchievementUnlocked(self.achievements[name].id)) {
+			// Create selector
+			$("#hint_" + self.achievements[name].id).attr("checked", true).checkboxradio("refresh");
+		}
+	}
+};
+
+/**
+ * Draws the stat page
+ */
+Storage.prototype.drawStats = function() {
+	var self = this;
+	// Update time before drawing.
+	self.updateTime();
+
+	// Print.
+	$("label[for='stats-1']").text(self.getPlayedTime() + " seconds");
+	$("label[for='stats-2']").text(self.getSteps());
+	$("label[for='stats-3']").text(self.getClicks());
+	$("label[for='stats-4']").text(self.getDialogs());
+};
+
+/**
+ * Updates the time in the stats
+ */
 Storage.prototype.updateTime = function()
 {
+	var self = this;
 	var d = new Date();
 	var time = d.getTime();
 	
 	if (time >= this.lastTime) {
-		this.data.stats.curTime += ((d.getTime() - this.lastTime) / 1000) | 0;
-		this.lastTime = d.getTime();
+		self.data.stats.curTime += ((d.getTime() - self.lastTime) / 1000) | 0;
+		self.lastTime = d.getTime();
 	}
 };
 
+/**
+ * Loads the hints from the xml file
+ */
+Storage.prototype.initHints = function()
+{
+	var self = this;
+	var configLoader = XMLConfigLoader.getInstance();
+	// Load achievements.
+	for (var i in configLoader.otma.hints) {
+		var hint = {};
+		hint.id = i;
+		hint.name = configLoader.otma.hints[i].title;
+		hint.desc = configLoader.otma.hints[i].text;
+		self.achievements["HINT_" + i] = hint;
+	}
+}
+
+/**
+ * Updates steps count
+ * @param int steps (optional) Number of steps to add to. If this value is not set, the current value will be incremented
+ */
+Storage.prototype.incSteps = function(steps)
+{
+	if (steps == undefined) {
+		steps = 1;
+	}
+	this.data.stats.curSteps += steps;
+};
+
+/**
+ * Updates clicks count
+ * @param int clicks (optional) Number of clicks to add to. If this value is not set, the current value will be incremented
+ */
+Storage.prototype.incClicks = function(clicks)
+{
+	if (clicks == undefined) {
+		clicks = 1;
+	}
+	this.data.stats.curClicks += clicks;
+};
+
+/**
+ * Updates dialogs count
+ * @param int dialogs (optional) Number of dialogs to add to. If this value is not set, the current value will be incremented
+ */
+Storage.prototype.incDialogs = function(dialogs)
+{
+	if (dialogs == undefined) {
+		dialogs = 1;
+	}
+	this.data.stats.curDialogs += dialogs;
+};
+
+/**
+ * Checks if there is a saved player
+ */
+Storage.prototype.hasSavedPlayer = function()
+{
+	return (this.getName() != null && this.getGender() != null && this.getHairColor() != null && this.getClothColor() != null);
+};
+
+/**
+ * unlocks an achievement
+ * @param string name the name of the achievement
+ * @param function callback a callback function that will be called after the achievement has been unlocked
+ * @return false if the achievement doesn't exist
+ */
+Storage.prototype.unlockAchievement = function(name, callback)
+{
+	var self = this;
+	
+	var ach = self.achievements[name];
+	if (!ach) {
+		return false;
+	}
+	
+	var dialogMgr = DialogMgr.getInstance();
+	
+	if (!self.hasAchievementUnlocked(ach.id)) {
+		self.data.achievements.unlocked.push(ach.id);
+		self.save();
+		dialogMgr.openDialog(new Dialog("talk", "Hint unlocked!", null, ach.desc, callback));
+			
+		// Update GUI.
+		$("#hints_btn .ui-btn-text").text("Hints (" + self.getUnlockedAchievements().length + "/6)");
+				
+		// Play sound.
+		SoundModule.getInstance().playSfx("achievementUnlocked");
+	} else {
+		dialogMgr.openDialog(new Dialog("talk", "Hint already received!", null, ach.desc, callback));
+	}
+};
+
+/**
+ * checks if the given achievement is already unlocked
+ * @param string id the id of the achievement
+ * @return true if unlocked, otherwise false
+ */
+Storage.prototype.hasAchievementUnlocked = function (id)
+{
+	var self = this;
+	for (var i = 0; i < self.getUnlockedAchievements().length; i++) {
+		if (self.data.achievements.unlocked[i] == id) {
+			return true;
+		}
+	}
+	return false;
+};
+
+/**
+ * creates the highscore view
+ */
+Storage.prototype.createHighscoreView = function(){
+	var self = this;
+	for (var i = 0; i < self.data.highscores.highscore.length; i++) {
+		var themeHeader = 'c';
+		var themeContent = 'c';
+		if (i == 0) {
+			themeHeader = 'e';
+			themeContent = 'e';
+		}
+		
+		$('<div data-role="collapsible" data-mini="true" data-theme="' + themeHeader +'" data-content-theme="' + themeContent +'">\
+			<h3>' + ((i<9) ? '&nbsp;&nbsp;' + (i+1) : (i+1)) + '. ' + self.data.highscores.highscore[i].playerName + ':  ' + self.data.highscores.highscore[i].score + ' points</h3>\
+			<table class="highscoreTable">\
+	        	<tr>\
+		            <td><label>Time: ' + self.data.highscores.highscore[i].time + '</label></td>\
+		            <td><label>Steps: ' + self.data.highscores.highscore[i].steps + '</label></td>\
+		            <td><label>Clicks: ' + self.data.highscores.highscore[i].clicks + '</label></td>\
+		            <td><label>Dialogs: ' + self.data.highscores.highscore[i].dialogs + '</label></td>\
+		        </tr>\
+			</table>\
+		</div>')
+		.collapsible()
+		.appendTo('#highscoreContent');
+	}
+};
+
+/**
+ * calculates the current score
+ */
+Storage.prototype.calculateScore = function() {
+	var self = this;
+	var score = self.maxScore
+			* Math.exp(-(
+				self.weightTime * self.getPlayedTime() + 
+				self.weightSteps * self.getSteps() + 
+				self.weightClicks * self.getClicks() + 
+				self.weightDialogs * self.getDialogs()
+			));
+	score = Math.floor(score);
+	if (score < self.minScore) {
+		score = self.minScore;
+	}
+	return score;
+}
+
+/**
+ * saves the highscore and sorts it
+ * @param string playerName the current player
+ */
+Storage.prototype.saveHighscore = function(playerName){
+	var self = this;
+	var highscore = new Object();
+	self.updateTime();
+	highscore.playerName = playerName;
+	highscore.score = this.calculateScore();
+	highscore.time = this.getPlayedTime();
+	highscore.steps = this.getSteps();
+	highscore.clicks = this.getClicks();
+	highscore.dialogs = this.getDialogs();
+	self.data.highscores.highscore.push(highscore);
+	self.data.highscores.highscore.sort(function(a,b){return b.score - a.score});
+	while(self.data.highscores.highscore.length > 10){
+		self.data.highscores.highscore.splice(self.data.highscores.highscore.length - 1,1);
+	}
+	this.save();
+};
+
+/* Getter and Setter */
 Storage.prototype.getPlayedTime = function()
 {
 	return this.data.stats.curTime;
@@ -281,30 +448,11 @@ Storage.prototype.getClothColor = function()
 	return this.data.player.clothColor;
 };
 
-Storage.prototype.incSteps = function(steps)
+Storage.prototype.getUnlockedAchievements = function ()
 {
-	if (steps == undefined)
-		steps = 1;
-	
-	this.data.stats.curSteps += steps;
+	return this.data.achievements.unlocked;
 };
-
-Storage.prototype.incClicks = function(clicks)
-{
-	if (clicks == undefined)
-		clicks = 1;
-	
-	this.data.stats.curClicks += clicks;
-};
-
-Storage.prototype.incDialogs = function(dialogs)
-{
-	if (dialogs == undefined)
-		dialogs = 1;
-	
-	this.data.stats.curDialogs += dialogs;
-};
-
+/*---*/
 Storage.prototype.setName = function(name)
 {
 	this.data.player.name = name;
@@ -323,133 +471,4 @@ Storage.prototype.setHairColor = function(hairColor)
 Storage.prototype.setClothColor = function(clothColor)
 {
 	this.data.player.clothColor = clothColor;
-};
-
-Storage.prototype.hasSavedPlayer = function()
-{
-	return (this.getName() != null && this.getGender() != null && this.getHairColor() != null && this.getClothColor() != null);
-};
-
-Storage.prototype.unlockAchievement = function(name)
-{
-	if (name in this.achievements)
-		this.unlockAchievement(name);
-};
-
-Storage.prototype.unlockAchievement = function(name, callback)
-{
-	var ach = this.achievements[name];
-	if (!ach)
-		return false;
-	
-	if (!this.hasUnlockedAchievement(ach.id)) {
-		this.data.achievements.unlocked.push(ach.id);
-		this.save();
-		this.showAchievmentUnlocked(ach, callback);
-			
-		// Update GUI.
-		$("#hints_btn .ui-btn-text").text(
-				"Hints (" + this.getUnlockedAchievements().length + "/6)");
-				
-		// Play sound.
-		playSfx("achievementUnlocked");
-	}
-	else 
-	{
-		var dialog = new Dialog("talk", "Hint already received!", null, ach.desc, callback);
-		dialogMgr.openDialog(dialog);
-	}
-};
-
-Storage.prototype.hasUnlockedAchievement = function (id)
-{
-	for (var i = 0; i < this.getUnlockedAchievements().length; i++) {
-		if (this.data.achievements.unlocked[i] == id)
-			return true;
-	}	
-};
-
-Storage.prototype.getUnlockedAchievements = function ()
-{
-	return this.data.achievements.unlocked;
-};
-
-Storage.prototype.showAchievmentUnlocked = function(ach, callback)
-{
-	var dialog = new Dialog("talk", "Hint unlocked!", null, ach.desc, callback);
-	dialogMgr.openDialog(dialog);
-};
-
-Storage.prototype.setHighscoreConstants = function(){
-	// Highscore Constants
-	this.weightTime = 0.00001;
-	this.weightSteps = 0.0001;
-	this.weightClicks = 0.0002;
-	this.weightDialogs = 0.0003;
-	this.maxScore = 10000;
-	this.minScore = 100;
-}
-
-Storage.prototype.createHighscoreView = function(self){
-	var themeHeader = null;
-	var themeContent = null;
-	for (var i = 0; i < this.data.highscores.highscore.length; i++) {
-		if (i == 0) {
-			themeHeader = 'e';
-			themeContent = 'e';
-		} else {
-
-			themeHeader = 'c';
-			themeContent = 'c';
-		}
-		
-		$('<div data-role="collapsible" data-mini="true" data-theme="' + themeHeader +'" data-content-theme="' + themeContent +'">\
-			<h3>' + ((i<9) ? '&nbsp;&nbsp;' + (i+1) : (i+1)) + '. ' + this.data.highscores.highscore[i].playerName + ':  ' + this.data.highscores.highscore[i].score + ' points</h3>\
-			<table class="highscoreTable">\
-	        	<tr>\
-		            <td><label>Time: ' + this.data.highscores.highscore[i].time + '</label></td>\
-		            <td><label>Steps: ' + this.data.highscores.highscore[i].steps + '</label></td>\
-		            <td><label>Clicks: ' + this.data.highscores.highscore[i].clicks + '</label></td>\
-		            <td><label>Dialogs: ' + this.data.highscores.highscore[i].dialogs + '</label></td>\
-		        </tr>\
-			</table>\
-		</div>')
-		.collapsible()
-		.appendTo('#highscoreContent');
-	}
-};
-
-Storage.prototype.clearHighscoreView = function(){
-	$('#highscoreContent').empty();
-};
-
-Storage.prototype.calculateScore = function() {
-	var score = this.maxScore
-			* Math.exp(-(
-				this.weightTime * this.getPlayedTime() + 
-				this.weightSteps * this.getSteps() + 
-				this.weightClicks * this.getClicks() + 
-				this.weightDialogs * this.getDialogs()
-			));
-	score = Math.floor(score);
-	if (score < this.minScore)
-		return this.minScore;
-	return score;
-}
-
-Storage.prototype.saveHighscore = function(playerName){
-	var highscore = new Object();
-	this.updateTime();
-	highscore.playerName = playerName;
-	highscore.score = this.calculateScore();
-	highscore.time = this.getPlayedTime();
-	highscore.steps = this.getSteps();
-	highscore.clicks = this.getClicks();
-	highscore.dialogs = this.getDialogs();
-	this.data.highscores.highscore.push(highscore);
-	this.data.highscores.highscore.sort(function(a,b){return b.score - a.score});
-	while(this.data.highscores.highscore.length > 10){
-		this.data.highscores.highscore.splice(this.data.highscores.highscore.length - 1,1);
-	}
-	this.save();
 };

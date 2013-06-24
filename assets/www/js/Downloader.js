@@ -3,130 +3,72 @@
  * It's a singleton pattern based class, don't call new on it! Use the
  * getInstance()-method.
  * 
- * How to use:
- * 1.) Call Downloader.Init(), wait for device is ready event, otherwise the downloader
- * will fail.
- * 2.) Add callbacks for successful download of one file or all queued files.
- * 3.) Tell the Downloader to download stuff! Just throw all the files needed in using
- * Downloader.queueFile, watch the callbacks for status updates.
+ * Author of Version 1.0 released on 09.06.2012: Tobias Sielaff
  * 
- * @author Tobias Sielaff
- * @version 1.0
- * @since 09.06.2012
+ * Completely rewritten on 22.06.2013 by Sebastian Pabel
+ * 
+ * @author Tobias Sielaff, Sebastian Pabel
+ * @version 2.0
+ * @since 22.06.2013
  */
- 
-function updateConfig()
-{
-	// Show spinner.
-	$.mobile.showPageLoadingMsg();
-	
-	// Get downloader and add callbacks.
-	dl = Downloader.getInstance();
-	dl.allDownloadsCompleteCallback(function() { window.location = 'index.html'; $.mobile.hidePageLoadingMsg(); });
-	
-	// Download stuff.
-	dl.queueFile("http://www.onthemove-academy.org/images/documents/otma-config-game-xml.pdf", "otma-config.xml");
-}
 
-function Downloader()
-{
-	// Internal state
-	this.ready = false;
-	this.running = false;
-	
-	// Base path.
-	this.basePath = null;
-	
-	// Download list.
-	this.downloadList = new Array();
-	
-	// Downloader.
-	this.fileTransfer = null;
-	
-	// Callbacks.
-	allDownloadsComplete = null;
-	downloadComplete = null;
-	
-	// Add page hook.
-	var self = this;
-	$(document).bind( "pagebeforechange", function(e, data) {
-		if (typeof data.toPage === "string") {
-			var url = $.mobile.path.parseUrl( data.toPage );
-			if (url.hash == "#menu1") {
-				// Enable update button if downloader is ready.
-				if (self.ready)
-					$("#update_btn").attr("class", "");
-			}
-		}
-	});
-}
-
-// Don't call new on the downloader.
+// Use Singleton pattern
 Downloader.getInstance = function()
 {
-	if (Downloader.instance == undefined) 
+	if (Downloader.instance == undefined) {
 		Downloader.instance = new Downloader();
+	}
 		
 	return Downloader.instance;
 }
+ 
+//Constructor
+function Downloader() { }
 
-Downloader.prototype.init = function()
-{
-	// Add listener that fires once the device is ready.
-	var self = this;
-	document.addEventListener("deviceready", function () {
-		// Our downloader.
-		con.debug("Init'ing fileTransfer");
-		self.fileTransfer = new FileTransfer();
-		
-		// Base path.
-		con.debug("Init'ing basePath");
-		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, 
-			function sucess(fileSystem) {
-				con.debug("Got filesystem...");
-				fileSystem.root.getDirectory("otma", {create: true, exclusive: false}, 
-					function success(parent) {
-						con.info("Got folder... " + parent.fullPath);
-						self.basePath = parent.fullPath;
-					},
-					function fail(error) {
-						con.error("Error in requestBasePath: " + error.code);
-					}
-				);
-			}, 
-			function fail(evt) {
-				con.error("Error in requestBasePath: " + evt.target.error.code)
-			}
-		);
-		
-		// We are ready!
-		self.ready = true;
-	}, false);
+//Internal state
+Downloader.prototype.isReady = false;
+Downloader.prototype.isRunning = false;
+
+//Download list.
+Downloader.prototype.downloadList = new Array();
+
+//Base path.
+Downloader.prototype.basePath = null;
+
+//Downloader.
+Downloader.prototype.fileTransfer = null;
+
+//Callbacks.
+Downloader.prototype.allDownloadsCompleteCallback = function() {
+	window.location = 'index.html';
+	$.mobile.hidePageLoadingMsg(); 
 };
 
-Downloader.prototype.allDownloadsCompleteCallback = function(func)
-{
-	this.allDownloadsComplete = func;
-};
+Downloader.prototype.downloadCompleteCallback = null;
 
-Downloader.prototype.downloadCompleteCallback = function(func)
-{
-	this.downloadComplete = func;
-};
+//Update values
+Downloader.prototype.updateUrl = "http://www.onthemove-academy.org/images/documents/otma-config-game-xml.pdf";
+Downloader.prototype.updateFilename = "otma-config.xml";
 
+/**
+ * Downloads a file
+ * @param string url the url where the new is located
+ * @param string name the filename of the new config file
+ * @returns true if success, otherwise false
+ */
 Downloader.prototype.queueFile = function(url, name)
 {
 	var self = this;
 	
 	// Either not yet ready or running in browser.
-	if (!self.ready) {
+	if (!self.isReady) {
 		// Debug.
 		con.error("queueFile failed: device not ready!");
 		return false;
 	}
 	
 	// Base path?
-	if (!self.hasBasePath()) {
+	if (self.basePath == null) {
 		// Debug.
 		con.warning("No base path...");
 		return false;
@@ -144,8 +86,8 @@ Downloader.prototype.queueFile = function(url, name)
 	con.debug("file added to download list")
 	
 	// Start downloader (if not running)
-	if (!self.running) {
-		self.running = true;
+	if (!self.isRunning) {
+		self.isRunning = true;
 		self.downloadFile(url, name);		
 	}
 	
@@ -153,40 +95,18 @@ Downloader.prototype.queueFile = function(url, name)
 	return true;
 };
 
-Downloader.prototype.moveToNextFile = function(lastFile, success)
-{
-	var self = this;
-	
-	// Null the entry.
-	self.downloadList[lastFile] = null;
-	
-	// Callback for one file complete.
-	if (self.downloadComplete != null || self.downloadComplete != undefined)
-		self.downloadComplete(lastFile, success);
-	
-	// More files?
-	for (key in self.downloadList) {
-		if (self.downloadList[key] != null) {
-			self.downloadFile(self.downloadList[key], key);
-			return;
-		}
-	}
-					
-	// Nope.
-	self.running = false;
-	
-	// Callback!
-	if (self.allDownloadsComplete != null || self.allDownloadsComplete != undefined)
-		self.allDownloadsComplete();
-};
-
+/**
+ * Downloads a file from a given ressource
+ * @param string url the url where the file is located
+ * @param string name the filename
+ */
 Downloader.prototype.downloadFile = function(url, name)
 {
 	// My instance.
 	var self = this;
 	
 	// Download!
-	var filePath = self.getBasePath() + "/" + name;
+	var filePath = self.basePath + "/" + name;
 	self.fileTransfer.download(
 		url,
 		filePath,
@@ -201,22 +121,62 @@ Downloader.prototype.downloadFile = function(url, name)
 	);
 };
 
-Downloader.prototype.hasBasePath = function()
+/**
+ * moves along to the next file if any
+ * @param string lastFile the filename of the last downloaded file
+ * @param bool success wether the last file was downloaded successfully or not
+ */
+Downloader.prototype.moveToNextFile = function(lastFile, success)
 {
-	return (this.getBasePath() != null);
+	var self = this;
+	
+	// Null the entry.
+	self.downloadList[lastFile] = null;
+	
+	// Callback for one file complete.
+	if (self.downloadCompleteCallback != null || self.downloadCompleteCallback != undefined) {
+		self.downloadCompleteCallback(lastFile, success);
+	}
+	
+	// More files?
+	for (key in self.downloadList) {
+		if (self.downloadList[key] != null) {
+			self.downloadFile(self.downloadList[key], key);
+			return;
+		}
+	}
+					
+	self.isRunning = false;
+	
+	// Callback!
+	if (self.allDownloadsCompleteCallback != null || self.allDownloadsCompleteCallback != undefined)
+		self.allDownloadsCompleteCallback();
 };
 
-Downloader.prototype.getBasePath = function()
+/**
+ * Checks if a file exists
+ * @param string fullFilename filename with path which should be checked
+ * @param function fileExistsCallback function that will be called if file exists
+ * @param function fileNotExistsCallback function that will be called if file does not exist
+ */
+Downloader.prototype.fileExists = function(fullFilename, fileExistsCallback, fileNotExistsCallback)
 {
-	return this.basePath;
-};
-
-Downloader.prototype.fileExists = function(path, fileExistsCallback, fileNotExistsCallback)
-{
-	if (!this.ready) {
+	if (!this.isReady) {
 		fileNotExistsCallback();
 		return;
 	}
 
-	window.resolveLocalFileSystemURI(path, fileExistsCallback, fileNotExistsCallback);
+	window.resolveLocalFileSystemURI(fullFilename, fileExistsCallback, fileNotExistsCallback);
 };
+
+/**
+ * Updates the config file
+ */
+Downloader.prototype.updateConfig = function()
+{
+	// Show spinner.
+	$.mobile.showPageLoadingMsg();
+	
+	// Download stuff.
+	this.queueFile(this.updateUrl, this.updateFilename);
+}

@@ -5,32 +5,34 @@
  * identifiable and can be set to trigger even if the player just walks over
  * the field on the map (not directly clicking on the field) by setting the owo
  * parameter to "yes".
+ * 
+ * Original version 0.9 released on 12.06.2012 by Michael Seider
+ * Rewritten on 23.06.2013 by Sebastian Pabel
  *
- * @author	Michael Seider
- * @version 0.9
- * @since	12.6.2012
+ * @author	Michael Seider, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
-function Teleport(id, from, to, direction, owo)
+function Teleport(id, from, to, direction, onWalkover)
 {
 	this.id = id;
 	this.from = from;
 	this.to = to;
 	this.direction = direction;
-	if (owo == "yes")
+	this.onWalkOver = false;
+	if (onWalkover == "yes") {
 		this.onWalkOver = true;
-	else
-		this.onWalkOver = false;
+	}
 	this.events = [];
 };
 
-/* Add an event to the Teleport. This will trigger the Event with the field
- * "id" of the passed event e if the condition in the "condition" field of e is
- * met. */
+/**
+ * Add an event to the Teleport. This will trigger the Event with the field
+ * "id" of the passed event e if the condition in the "condition" field of e is met.
+ * @param array e the event
+ */
 Teleport.prototype.addEvent = function(e)
 {
-	if (this.events == undefined)
-		this.events = [];
-
 	this.events[this.events.length] = e;
 };
 

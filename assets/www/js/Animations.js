@@ -6,50 +6,69 @@
  * - use AnimationMgr.add to add the animation
  * - call AnimationMgr.animate() in timer repeatedly
  * 
- * @author Ulrich Hornung
- * @version 1.0
- * @since 09.06.2012
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
  */
 
-function AnimationMgr()
+// Use Singleton pattern
+AnimationMgr.getInstance = function()
 {
-	this.animations = []; // array
+	if (AnimationMgr.instance == undefined) {
+		AnimationMgr.instance = new AnimationMgr();
+	}
+		
+	return AnimationMgr.instance;
 }
 
+function AnimationMgr() { }
+
+AnimationMgr.prototype.animations = [];
+
+/**
+ * Adds an animation to the chain
+ */
 AnimationMgr.prototype.add = function(animation)
 {
 	animation.last = 0;
 	this.animations.push(animation);
 };
 
+/**
+ * calls the animations
+ */
 AnimationMgr.prototype.animate = function(time)
 {
+	var self = this;
 	i = 0; 
-	while (i < this.animations.length)
+	while (i < self.animations.length)
 	{
-		ani = this.animations[i];
+		ani = self.animations[i];
 		var end = false;
-		if (ani.last == 0) ani.last = time - ani.delta;
-		var delta = (time - ani.last);
-		var count = (delta / ani.delta) | 0;
+		if (ani.last == 0) {
+			ani.last = time - ani.delta;
+		}
+		var count = ((time - ani.last) / ani.delta) | 0;
 		
-		for (var t = 1; (t <= count) && (!end); t++)
-		{
+		for (var t = 1; (t <= count) && (!end); t++) {
 			var ttime = ani.last + ani.delta;
 			end = !ani.step(ttime);
 			ani.last = ttime;
 		}
 		
-		if (end)
-		{
-			if (ani.finished != undefined)
+		if (end) {
+			if (ani.finished != undefined){
 				ani.finished();
+			}
 			
 			// remove from list
-			this.animations.splice(i, 1);
-		}
-		else
+			self.animations.splice(i, 1);
+		} else{
 			i++;
+		}
 	}
 };
 

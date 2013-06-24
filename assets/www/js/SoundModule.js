@@ -3,124 +3,155 @@
  * For each type (sound and music) a extra audio element is used.
  * A listener handles the events from the gui elements which are used for volume settings.
  * 
- * 
- * @author Richard Grötsch
- * @version 1.0
- * @since 29.05.2012
+ * Original version 1.0 released on 29.05.2012 by Richard Grötsch
+ * Rewritten on 24.06.2013 by Sebastian Pabel
+ *
+ * @author  Richard Grötsch, Sebastian Pabel
+ * @version 2.0
+ * @since	24.06.2013
  */
 
-// some global variables for audio element, gui element, path, audio formats
-soundEnableCheckbox = null;
-audioElementMusic = null;
-audioSourceMusic = null;
-audioSourceSfx = null;
-audioPath = null;
-audioExtensionWav = ".wav";
-audioExtensionMp3 = ".mp3";
-audioExtensionOgg = ".ogg";
-platformAudioExt = "";
+//Use Singleton pattern
+SoundModule.getInstance = function()
+{
+	if (SoundModule.instance == undefined) {
+		SoundModule.instance = new SoundModule();
+	}
+		
+	return SoundModule.instance;
+}
 
-media_objs = {};
-
+//constructor
 function SoundModule() {
-	// determin on which platform the app is running to create the matching instances for audio
-	audioPath = "res/audio/"
-	switch (platform) {
+	
+	var audioExtensionWav = ".wav";
+	var audioExtensionMp3 = ".mp3";
+	var audioExtensionOgg = ".ogg";
+	
+	this.getAudioExtensionWav = function() {
+		return audioExtensionWav;
+	};
+	this.getAudioExtensionMp3 = function() {
+		return audioExtensionMp3;
+	};
+	this.getAudioExtensionOgg = function() {
+		return audioExtensionOgg;
+	};
+	
+	this.audioPath = app.resDir + 'audio/';
+	
+	this.init();
+}
+
+SoundModule.prototype.audioPath = 'res/audio/';
+SoundModule.prototype.audioElementMusic = null;
+SoundModule.prototype.audioSourceMusic = null;
+SoundModule.prototype.soundEnabled = false;
+SoundModule.prototype.platformAudioExt = "";
+SoundModule.prototype.media_objs = {};
+
+/**
+ * first init
+ */
+SoundModule.prototype.init = function() {
+	var self = this;
+	
+	switch (app.platform) {
     case "WinCE_disabled": // WP7 (With PhoneGap Audio), doesn't work well at the moment cause of a bug in PhoneGap
 		// a special path to the audio files must be set
-        audioPath = "/app/www\\audio\\";
+    	self.audioPath = "/app/www\\audio\\";
 		// the complete source of the audio file
-		audioSourceMusic = audioPath + "theme" + audioExtensionMp3;
+    	self.audioSourceMusic = self.audioPath + "theme" + self.getAudioExtensionMp3();
 		// create a new phonegap media object for music
-//		audioElementMusic = new Media(audioSourceMusic, onSuccessMusic, onErrorMusic);
+    	self.platformAudioExt = self.getAudioExtensionMp3();
 		break;
 	case "Android": // Android
-		con.info("Platform: " + platform);
-		// a special path to the audio files must be set
-		audioPath = "/android_asset/www/" + audioPath;
+		con.info("Platform: " + app.platform);
 		// the complete source of the audio file
-		audioSourceMusic = audioPath + "theme" + audioExtensionOgg;
+		self.audioSourceMusic = self.audioPath + "theme" + self.getAudioExtensionOgg();
+		self.platformAudioExt = self.getAudioExtensionOgg();
 		break;
     case "WinCE": // WP7 (with HTML5 Audio), can't play multiple sounds simultaneously
 	case "Web": // Browser
-		con.info("Platform: " + platform);
-		// a special path to the audio files must be set
-		//audioPath = "res/audio/";
+		con.info("Platform: " + app.platform);
 		// the html5 audio element for music
-		audioElementMusic = document.getElementById("audioElementMusic");
-		//audioElementMusic = document.getElementById("audio_error");
+		self.audioElementMusic = document.getElementById("audioElementMusic");
 		break;
 	default:
-		con.info("unknown platform: " + platform);
+		con.info("unknown platform: " + app.platform);
         return;
 	}
-	// create a new phonegap media object for music
-	audioElementMusic = new Media(audioSourceMusic, onSuccessMusic, onErrorMusic);
 	
-	soundEnableCheckbox = document.getElementById("sound_enable_btn");
-
-	soundCheckBoxListener(document.getElementById("sound_enable_btn").checked);
-}
-
-function soundCheckBoxListener(checked) {
-	if (checked) {
-		soundEnableCheckbox.checked = true;
-		audioElementMusic.play();
-	} else {
-		soundEnableCheckbox.checked = false;
-		audioElementMusic.pause();
+	// create a new phonegap media object for music
+	if (self.audioElementMusic == null) {
+		self.audioElementMusic = new Media(
+			self.audioSourceMusic,
+			function() {
+				//success callback function
+				con.debug("Audio Success");
+				self.audioElementMusic.play();
+			},
+			function(error) {
+				//error callback function
+				con.error("Audio Fail\ncode: " + error.code + "\nmessage: " + error.message);
+			});
 	}
+	
+	$('#sound_enable_btn').click(function() {
+		if ($(this).is(':checked')) {
+			con.info('sound has been enabled');
+			self.soundEnabled = true;
+			self.audioElementMusic.play();
+		} else {
+			con.info('sound disabled');
+			self.soundEnabled = false;
+			self.audioElementMusic.pause();
+		}
+	});
+	
+	self.audioElementMusic.pause();
 }
 
-function onSuccessMusic() {
-	con.debug("Audio Success");
-	audioElementMusic.play();
-}
-
-function onErrorMusic(error) {
-	con.error("Audio Fail\ncode: " + error.code + "\nmessage: "
-			+ error.message);
-}
-
-function onSuccessSfx() {
-}
-
-function onErrorSfx(error) {
-	con.error("Audio Fail\ncode: " + error.code + "\nmessage: "
-			+ error.message);
-}
-
-function playSfx(name) {
-
+/**
+ * Plays an specified sound
+ * @param string name the sound name
+ */
+SoundModule.prototype.playSfx = function(name) 
+{
+	var self = this;
+	
     con.debug("playSfx: " + name);
 
-	if (!soundEnableCheckbox.checked)
+	if (!self.soundEnabled){
 		return;
+	}
 
-	audioSourceSfx = audioPath + name + platformAudioExt;
-
-	con.info("sound enabled! play: " + audioSourceSfx);
-	
 	var sfx = null;
 
-	if (platform != "Web" && platform != "WinCE") {
+	if (app.platform != "Web" && app.platform != "WinCE") {
+		var audioSourceSfx = self.audioPath + name + self.platformAudioExt;
+		con.info("sound enabled! play: " + audioSourceSfx);
 		//mobile phone
-		sfx = media_objs[name];
-		if (sfx == undefined)
-		{
+		sfx = self.media_objs[name];
+		if (sfx == undefined) {
 			con.debug("create new Media Object for: " + name);
-			sfx = new Media(audioSourceSfx, onSuccessSfx, onErrorSfx);
-			media_objs[name] = sfx;
+			sfx = new Media(
+				audioSourceSfx,
+				function() {
+					
+				},
+				function() {
+					con.error("Audio Fail\ncode: " + error.code + "\nmessage: " + error.message);
+				}
+			);
+			self.media_objs[name] = sfx;
 		}
-	}
-	else
-	{
+	} else {
 		//web
 		sfx = document.getElementById("audio_" + name);
 	}
 	
-    if (sfx != null)
-    {
+    if (sfx != null) {
         try {
     		con.debug("Try to play");
 		    sfx.play();
