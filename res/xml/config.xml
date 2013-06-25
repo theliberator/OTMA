@@ -18,6 +18,7 @@
     <content src="index.html" />
 
 	<preference name="loglevel" value="ERROR" />
+	<preference name="loadingDialog" title="Loading..." message="OTMA-Game is loading. Please Wait." />
     <!--
       <preference name="splashscreen" value="resourceName" />
       <preference name="backgroundColor" value="0xFFF" />
@@ -29,60 +30,60 @@
     <feature name="App">
       <param name="android-package" value="org.apache.cordova.App"/>
     </feature>
-    <feature name="Geolocation">
+    <!-- <feature name="Geolocation">
       <param name="android-package" value="org.apache.cordova.GeoBroker"/>
-    </feature>
+    </feature>-->
     <feature name="Device">
       <param name="android-package" value="org.apache.cordova.Device"/>
     </feature>
-    <feature name="Accelerometer">
+    <!-- <feature name="Accelerometer">
       <param name="android-package" value="org.apache.cordova.AccelListener"/>
-    </feature>
-    <feature name="Compass">
+    </feature>-->
+    <!-- <feature name="Compass">
       <param name="android-package" value="org.apache.cordova.CompassListener"/>
-    </feature>
+    </feature>-->
     <feature name="Media">
       <param name="android-package" value="org.apache.cordova.AudioHandler"/>
     </feature>
-    <feature name="Camera">
+    <!-- <feature name="Camera">
       <param name="android-package" value="org.apache.cordova.CameraLauncher"/>
-    </feature>
-    <feature name="Contacts">
+    </feature>-->
+    <!-- <feature name="Contacts">
       <param name="android-package" value="org.apache.cordova.ContactManager"/>
-    </feature>
+    </feature>-->
     <feature name="File">
       <param name="android-package" value="org.apache.cordova.FileUtils"/>
     </feature>
     <feature name="NetworkStatus">
       <param name="android-package" value="org.apache.cordova.NetworkManager"/>
     </feature>
-    <feature name="Notification">
+    <!-- <feature name="Notification">
       <param name="android-package" value="org.apache.cordova.Notification"/>
-    </feature>
+    </feature>-->
     <feature name="Storage">
       <param name="android-package" value="org.apache.cordova.Storage"/>
     </feature>
     <feature name="FileTransfer">
       <param name="android-package" value="org.apache.cordova.FileTransfer"/>
     </feature>
-    <feature name="Capture">
+    <!-- <feature name="Capture">
       <param name="android-package" value="org.apache.cordova.Capture"/>
-    </feature>
-    <feature name="Battery">
+    </feature> -->
+    <!-- <feature name="Battery">
       <param name="android-package" value="org.apache.cordova.BatteryListener"/>
-    </feature>
+    </feature>-->
     <feature name="SplashScreen">
       <param name="android-package" value="org.apache.cordova.SplashScreen"/>
     </feature>
-    <feature name="Echo">
+    <!-- <feature name="Echo">
       <param name="android-package" value="org.apache.cordova.Echo"/>
-    </feature>
+    </feature>-->
     <feature name="Globalization">
       <param name="android-package" value="org.apache.cordova.Globalization"/>
     </feature>
-    <feature name="InAppBrowser">
+    <!-- <feature name="InAppBrowser">
       <param name="android-package" value="org.apache.cordova.InAppBrowser"/>
-    </feature>
+    </feature> -->
     
     <!-- Deprecated plugins element. Remove in 3.0 -->
     <plugins>
