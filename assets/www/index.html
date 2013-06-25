@@ -55,8 +55,8 @@
 	  </script>
   </head>
   <body id="main"> <!-- onkeydown="controls(event);"> -->
-  <div id="root_div">
-  </div>
+  <!-- <div id="root_div">
+  </div> -->
  	
  	<!-- define all audio files used ingame. All audio-tags can accessed with js via their IDs -->
     <audio id="audioElementMusic" loop="loop">
@@ -171,7 +171,7 @@
 			</div><!-- /header -->
 			<div data-role="content">
 			<!-- <p><a href="#menuhints" id="hints_btn" data-role="button">Hints (0/6)</a></p> -->
-			<p><a href="#menustats" data-role="button">Statistics</a></p>
+			<p><a href="#menustats" data-role="button" data-rel="dialog">Statistics</a></p>
 			<!-- <p><a href="#gamediv" onclick="setTimeout(function() { gui.forcedDraw();}, 10);" data-role="button">Back to game</a></p>-->
 			<p><a href="#" data-role="button" data-rel="back">Back to game</a></p>
 			<h1>Options</h1>
@@ -207,9 +207,9 @@
 				</canvas>
 			</div>
 			<div data-role="footer" style="height: 42px;">
-				<a href="#menuhints" id="hints_btn" data-role="button" data-icon="check" class="ui-btn-left">Hints (0/6)</a>
+				<a href="#menuhints" id="hints_btn" data-role="button" data-icon="check" class="ui-btn-left" data-rel="dialog" data-transition="slidedown">Hints (0/6)</a>
 				<h1 id="statustxt"></h1>
-				<a href="#menu1" data-role="button" data-icon="gear" class="ui-btn-right">Open Menu</a>
+				<a href="#menu1" data-role="button" data-icon="gear" class="ui-btn-right" data-rel="dialog" data-transition="slidedown">Open Menu</a>
 			</div>
 		</div>
 		

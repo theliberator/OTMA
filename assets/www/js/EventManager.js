@@ -305,9 +305,9 @@ EventManager.prototype.timeEvent = function(time)
 			((self.playerWalkAni == undefined) || (self.playerWalkAni.ready == true))
 		)
 	{
-		self.renderer.look_offset_x = 0;
-		self.renderer.look_offset_y = 0;
-		self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
+//		self.renderer.look_offset_x = 0;
+//		self.renderer.look_offset_y = 0;
+//		self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
 		self.was_walking = false;
 	}
 	
@@ -415,16 +415,6 @@ EventManager.prototype.clickEvent = function(pos)
 		// play error sound
 		SoundModule.getInstance().playSfx("error");
 	}
-	
-//	while(self.playerWalkJob.length > 0) {
-//		self.processNextPlayerWalkJob();
-//		self.animationMgr.animate(new Date().getTime());
-//	}
-//	
-//	self.renderer.look_offset_x = 0;
-//	self.renderer.look_offset_y = 0;
-//	self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
-//	self.renderer.draw();
 };
 
 EventManager.prototype.checkCondition = function(name)
@@ -462,27 +452,10 @@ EventManager.prototype.talkEvent = function(npc)
 	}
 };
 
-EventManager.prototype.keyPressedEvent = function(key)
-{
-	switch (key)
-	{
-	case "reset":
-		this.storage.reset();
-		break;
-	case "unlock":
-		// Just some debugging.
-		this.storage.unlockAchievement("HINT_1");
-		break;
-	case "highscore":
-		// Just some debugging.
-		this.storage.saveHighscore(this.player.name);
-		break;
-	}
-};
-		
 EventManager.prototype.processNextPlayerWalkJob = function()
 {
 	var self = this;
+	con.debug('nextPlayerWalkJob. Jobs left: ' + self.playerWalkJob.length);
 	var direction = self.playerWalkJob.shift();
 	var dx = 0;
 	var dy = 0;

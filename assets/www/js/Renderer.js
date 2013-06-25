@@ -119,8 +119,8 @@ Renderer.prototype.calcPosFromPlayerPos = function(x,y)
 	}
 	self.bgdx = tx | 0;
 	self.bgdy = ty | 0;
-	self.look_offset_x = -(-x -16 + hx) + tx;
-	self.look_offset_y = -(-y -16 + hy) + ty;
+//	self.look_offset_x = -(-x -16 + hx) + tx;
+//	self.look_offset_y = -(-y -16 + hy) + ty;
 };
 
 /**
@@ -190,8 +190,10 @@ Renderer.prototype.forcedDraw = function()
  */
 Renderer.prototype.draw = function(forced)
 {
-	//this.calcPosFromPlayerPos(this.map.player.x, this.map.player.y);
 	var self = this;
+//	self.look_offset_x = 0;
+//	self.look_offset_y = 0;
+	self.calcPosFromPlayerPos(this.map.player.x, this.map.player.y);
 	
 	var ctx_bg = $("#background")[0].getContext("2d");
 	var ctx_obj = $("#objects")[0].getContext("2d");

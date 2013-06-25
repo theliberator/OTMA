@@ -205,6 +205,7 @@ var app = {
     },
     
     initGame: function() {
+    	$.mobile.showPageLoadingMsg();
     	con.info("Init the game!");
     	var storage = Storage.getInstance()
     	con.info("Name: " + storage.getName());
@@ -261,8 +262,14 @@ var app = {
     				
     					// Run game loop!
     					con.info("game start now!");
-    					gui.forcedDraw();
-    					app.gameLoop();
+//    					game.init();
+    					setTimeout(function() {
+//    						gui.forcedDraw();
+    						$.mobile.hidePageLoadingMsg();
+//    						gui.updateCanvasSize();
+    						app.gameLoop();
+    					}, 1000);
+//    					app.gameLoop();
     				});
     			});
     		});
