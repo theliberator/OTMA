@@ -119,10 +119,10 @@
 			<div data-role="content">
 				<p><a href="#gamediv" data-role="button" data-icon="arrow-r" id="continue_game_btn" class="ui-disabled">Continue</a></p>
 				<p><a href="#newgamepage" data-role="button" data-icon="refresh" data-rel="dialog" id="new_game_btn">New Game</a></p>	
-				<p><br></p>
-				<p><a href="#highscore" data-role="button">Highscore</a></p>
-				<p><br></p>
-				<p><a href="#credits" data-role="button">Credits</a></p>
+				<p><br /></p>
+				<p><a href="#highscore" data-role="button" data-rel="dialog">Highscore</a></p>
+				<p><br /></p>
+				<p><a href="#credits" data-role="button" data-rel="dialog">Credits</a></p>
 				<p><br /></p>
 				<p><a href="#" data-role="button" id="exit_game_button">Exit Game</a></p>
 			</div>
@@ -145,8 +145,8 @@
 				<h1>New Game</h1>
 			</div><!-- /header -->	
 			<div data-role="content">
-			    <label for="name">Welcome to the OTMA-Game!</label><br>
-			    <label>Please enter your name:</label>
+			    <p>Welcome to the OTMA-Game!</p>
+			    <label for="name">Please enter your name:</label>
 			    <input type="text" name="name" id="player_name" value="Player"  />
 				<fieldset data-role="controlgroup">
 					<legend>Choose the look of your character:</legend>
@@ -155,11 +155,11 @@
 				     	<input type="radio" name="player-class" id="radio-choice-2" value="female"  />
 				     	<label for="radio-choice-2">female</label>
 				</fieldset>
-			    <label>Hair color:</label>
-				<div id='hairColor'></div><br>
-			    <label>Cloth color:</label>
-				<div id='clothColor'></div><br>
-				<label for="name">and finally:</label>
+			    <p>Hair color:</p>
+				<div id='hairColor'></div>
+			    <p>Cloth color:</p>
+				<div id='clothColor'></div>
+				<p>and finally:</p>
 				<p><a href="#gamediv" data-role="button" id="start_btn">Start Game</a></p>	
 			</div>
 		</div>
@@ -172,7 +172,8 @@
 			<div data-role="content">
 			<!-- <p><a href="#menuhints" id="hints_btn" data-role="button">Hints (0/6)</a></p> -->
 			<p><a href="#menustats" data-role="button">Statistics</a></p>
-			<p><a href="#gamediv" onclick="setTimeout(function() { gui.forcedDraw();}, 10);" data-role="button">Back to game</a></p>
+			<!-- <p><a href="#gamediv" onclick="setTimeout(function() { gui.forcedDraw();}, 10);" data-role="button">Back to game</a></p>-->
+			<p><a href="#" data-role="button" data-rel="back">Back to game</a></p>
 			<h1>Options</h1>
 			<p><label><input id="sound_enable_btn" type="checkbox" name="checkbox-1" /> Enable Sound </label></p>
 			<h1>Extended</h1>
@@ -225,7 +226,7 @@
 					<li>Dialogs: <label for="stats-4"></label></li>
 				</ul>
 				<br><br>				
-				<p><a href="javascript:history.back(-1)" data-direction="reverse" data-role="button" data-theme="b">Back</a></p>	
+				<p><a href="#" data-direction="reverse" data-role="button" data-rel="back" data-theme="b">Back</a></p>	
 			</div>
 		</div>
 				
@@ -250,7 +251,7 @@
 				<label for="hint_4">Hint 5</label>
 				<label for="hint_5">Hint 6</label>
 				 
-				<p><a href="javascript:history.back(-1)" data-direction="reverse" data-role="button" data-theme="b">Back</a></p>	
+				<p><a href="#" data-direction="reverse" data-role="button" data-rol="back" data-theme="b">Back</a></p>	
 			</div><!-- /content -->
 		</div>
 		
@@ -261,9 +262,9 @@
 			</div><!-- /header -->	
 			<div data-role="content">
 				<div id="highscoreContent"></div>
-				<br><br>
+				<br /><br />
 				<p><a href="#" data-role="button" onClick="resetGame(true);">Exit</a></p>	
-				<br>
+				<br />
 				<p><a href="#" data-role="button" onClick="resetGame(false);">Delete Highscores</a></p>
 			</div>
 		</div>
@@ -283,7 +284,7 @@
 				<p>Tobias Sielaff</p>
 				<br>
 				<p>The authors thank Mozilla for the inspiration and graphic templates: http://browserquest.mozilla.org/</p>
-				<p><a href="#welcomepage" data-role="button">Back</a></p>	
+				<p><a href="#" data-role="button" data-rel="back">Back</a></p>	
 			</div>
 		</div>		
   </body>
