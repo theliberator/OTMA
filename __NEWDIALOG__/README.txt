@@ -10,11 +10,11 @@ branchedDialog.html:
 	sonst den Fehler 'Cross origin requests are only supported for HTTP.' produziert.
 	Wenn man Python installiert hat, geht da Hosten zum testen am schnellsten, indem man in das Verzeichnis 'branchedDialog' wechselt und..
 
-												python -m SimpleHTTPServer <portNumber>
+		python -m SimpleHTTPServer <portNumber>
 												
 	..aufruft. Dann kann man im Browser, mittels..
 												
-												localhost:<portNumber>/branchedDialog.html
+		localhost:<portNumber>/branchedDialog.html
 												
 	..die Seite als gehostete Seite im Browser aufrufen und das Laden der XML-Datei funktioniert problemlos.
 	
