@@ -202,6 +202,8 @@ var app = {
     			app.initGame();
     		});
     	}
+    	
+    	navigator.splashscreen.hide();
     },
     
     initGame: function() {
