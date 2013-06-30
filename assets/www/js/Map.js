@@ -64,7 +64,9 @@ Map.prototype.layer_background = null;
 Map.prototype.layer_foreground = null;
 Map.prototype.layer_collision = null;
 
-
+Map.prototype.reset = function() {
+	Map.instance = undefined;
+};
 /**
  * Inital function
  * @param array map_data Map data stored in otma_map.js

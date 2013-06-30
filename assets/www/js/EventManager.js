@@ -50,6 +50,10 @@ EventManager.prototype.was_walking = true;
 EventManager.prototype.playerWalkJob = [];
 EventManager.prototype.conditions = {};
 
+EventManager.prototype.reset = function() {
+	EventManager.instance = undefined;
+};
+
 /**
  * init function
  */

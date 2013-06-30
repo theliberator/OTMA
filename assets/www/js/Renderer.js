@@ -53,6 +53,9 @@ Renderer.prototype.last_ty = 0;
 Renderer.prototype.look_offset_x = 0;
 Renderer.prototype.look_offset_y = 0;
 
+Renderer.prototype.reset = function() {
+	Renderer.instance = undefined;
+}
 /**
  * updates the canvas size
  */

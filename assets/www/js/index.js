@@ -241,8 +241,6 @@ var app = {
 
     					con.debug("map_init done");
 
-    					mapFile = null; //null the map file. why?
-    				
     					var animationMgr = AnimationMgr.getInstance();
     					con.debug("init animationMgr done");
     					var soundModule = SoundModule.getInstance();
@@ -362,5 +360,19 @@ var app = {
             && /^file:\/{3}[^\/]/i.test(window.location.href)
             && /ios|iphone|ipod|ipad|android/i.test(navigator.userAgent)) ||
             window.tinyHippos; //this is to cover phonegap emulator
+    },
+    
+    resetGame: function(keepHighscore) {
+    	Storage.getInstance().reset(keepHighscore);
+    	XMLConfigLoader.getInstance().reset();
+    	StoryGenerator.getInstance().reset();
+    	Map.getInstance().reset();
+    	Renderer.getInstance().reset();
+    	EventManager.getInstance().reset();
+    	$.mobile.changePage('index.html', {
+    		transition: 'pop',
+    		reverse: false,
+    		changeHash: false
+    	});
     }
 };

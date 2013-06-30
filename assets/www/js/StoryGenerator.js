@@ -36,6 +36,11 @@ StoryGenerator.prototype.levels = null;
 StoryGenerator.prototype.events = null;
 StoryGenerator.prototype.initialEvents = [];
 
+StoryGenerator.prototype.reset = function() {
+	this.levels = null;
+	this.events = null;
+	this.initialEvents = [];
+};
 /**
  * shuffles an array
  */

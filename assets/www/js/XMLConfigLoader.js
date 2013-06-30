@@ -66,6 +66,27 @@ XMLConfigLoader.prototype.Values = {
 };
 
 /**
+ * Resets the config loader
+ */
+XMLConfigLoader.prototype.reset = function() {
+	this.otma = {
+		persons: [],
+		otma_events: [],
+		hints: [],
+		roomsLayoutUpper: [],
+		roomsLayoutLower: [],
+		entry_teleports: [],
+		teleports: []
+	};
+	this.map = {
+		teleports: {},
+		ets: {},
+		npcs: [],
+		events: {}
+	};
+};
+
+/**
  * Loads the otma xml config file
  * @param string path path to the config file
  * @param function callback function that will be called after the load has finished
