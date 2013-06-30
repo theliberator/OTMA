@@ -1,0 +1,54 @@
+﻿<?xml version="1.0" encoding="UTF-8" ?>
+<DialogTree>
+	<DialogPage id="root">
+		<Content>A, B oder C?</Content>
+		<Options>
+			<Answer id="answer_a" successor="page_a">
+				<Text>A</Text>
+			</Answer>
+			<Answer id="answer_b" successor="page_b">
+				<Text>B</Text>
+			</Answer>
+			<Answer id="answer_c" successor="page_c">
+				<Text>C</Text>
+			</Answer>
+		</Options>
+	</DialogPage>
+	<DialogPage id="page_a">
+		<Content>Antwort A ist eine Sackgasse.</Content>
+		<Options>
+		</Options>
+	</DialogPage>
+	<DialogPage id="page_b">
+		<Content>Antwort B liefert einen Hinweis.</Content>
+		<Options>
+			<Hint id="hint_b">Dies ist der Hinweis.</Hint>
+		</Options>
+	</DialogPage>
+	<DialogPage id="page_c">
+		<Content>Antwort C wirft weitere Fragen auf.</Content>
+		<Options>
+			<Answer id="answer_ca" successor="page_ca">
+				<Text>CA</Text>
+			</Answer>
+			<Answer id="answer_cb" successor="page_cb">
+				<Text>CB</Text>
+			</Answer>
+			<!-- answer_cc führt zurück zum Anfang -->
+			<Answer id="answer_cc" successor="root">
+				<Text>CC</Text>
+			</Answer>
+		</Options>
+	</DialogPage>
+		<DialogPage id="page_ca">
+		<Content>Antwort CA ist eine Sackgasse.</Content>
+		<Options>
+		</Options>
+	</DialogPage>
+	<DialogPage id="page_cb">
+		<Content>Antwort CB liefert einen Hinweis.</Content>
+		<Options>
+			<Hint id="hint_cb">Dies ist der Hinweis.</Hint>
+		</Options>
+	</DialogPage>
+</DialogTree>
