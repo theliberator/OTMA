@@ -112,7 +112,7 @@ Storage.prototype.reset = function(retainHighscores)
 	if (retainHighscores) {
 		// Load local storage.
 		
-		if (localStorage.length == 0 && localStorage.data.length == 0) {
+		if (localStorage.length == 0 || localStorage.data == undefined || localStorage.data.length == 0) {
 			return; //nothing to load
 		}
 		var data = JSON.parse(localStorage.data);

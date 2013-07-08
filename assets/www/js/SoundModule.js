@@ -77,6 +77,11 @@ SoundModule.prototype.init = function() {
 		// the html5 audio element for music
 		self.audioElementMusic = document.getElementById("audioElementMusic");
 		break;
+	case "windows8": //Windows 8 App
+	    con.log("Platform: " + app.platform);
+	    self.audioSourceMusic = "/res/audio/theme" + self.getAudioExtensionMp3();
+	    self.platformAudioExt = self.getAudioExtensionMp3();
+	    break;
 	default:
 		con.info("unknown platform: " + app.platform);
         return;

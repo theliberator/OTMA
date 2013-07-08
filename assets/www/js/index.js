@@ -207,7 +207,13 @@ var app = {
     },
     
     initGame: function() {
-    	$.mobile.showPageLoadingMsg();
+    	$.mobile.loading('show', {
+    		text: '',
+    		textVisible: false,
+    		theme: 'a',
+    		textonly: false,
+    		html: ''
+    	});
     	con.info("Init the game!");
     	var storage = Storage.getInstance()
     	con.info("Name: " + storage.getName());
@@ -265,7 +271,7 @@ var app = {
 //    					game.init();
     					setTimeout(function() {
 //    						gui.forcedDraw();
-    						$.mobile.hidePageLoadingMsg();
+//    						$.mobile.loading('hide');
 //    						gui.updateCanvasSize();
     						app.gameLoop();
     					}, 1000);
@@ -357,7 +363,7 @@ var app = {
     //detect if mobile device or browser
     isPhoneGap: function() {
         return ((cordova || PhoneGap || phonegap)
-            && /^file:\/{3}[^\/]/i.test(window.location.href)
+    		&& (/^file:\/{3}[^\/]/i.test(window.location.href) || /ms-appx:/i.test(window.location.href))
             && /ios|iphone|ipod|ipad|android/i.test(navigator.userAgent)) ||
             window.tinyHippos; //this is to cover phonegap emulator
     },
