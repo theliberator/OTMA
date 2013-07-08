@@ -11,8 +11,8 @@ var app = {
 	//variables
 	platform: 'Web',
 	resDir: 'res/',
-	
-	
+
+
     // Application Constructor
     initialize: function() {
         this.bindEvents();
@@ -53,7 +53,7 @@ var app = {
   		con.debug('init downloader');
   		var downloader = Downloader.getInstance();
   		downloader.fileTransfer = new FileTransfer();
-		
+
 		// Base path.
 		con.debug("Init basePath");
 		window.requestFileSystem(LocalFileSystem.PERSISTENT, 0, 
@@ -76,12 +76,12 @@ var app = {
 		// We are ready!
 		downloader.ready = true;
 		con.debug('downloader set up complete');
-		
+
 		$('update_btn').click(function(e) {
 			e.preventDefault();
 			Downloader.getInstance().updateConfig();
 		});
-		
+
 		app.main();
     },
     
@@ -120,7 +120,7 @@ var app = {
 				colors : [ 'goldenrod', 'peru' ],
 				context : "Hair"
 			});
-			
+
 			// cloth color picker
 			var lastColorSpanCloth = null;
 			$('#clothColor').empty().addColorPicker({
@@ -146,20 +146,20 @@ var app = {
 				},
 				context : "Cloth"
 			});
-			
+
 			$("#start_btn").click(function()
 			{
 				var storage = Storage.getInstance()
 				// Reset local storage.
 				storage.reset(true);
 				//TODO delete achievements
-				
+
 				// Set player attributes.
 				storage.setName(document.getElementById("player_name").value);
 				storage.setGender($("input[name='player-class']:checked").val());
 				storage.setHairColor(hairColor);
 				storage.setClothColor(clothColor);
-				
+
 				con.debug('color successfully set');
 				// Go.
 				app.initGame();
@@ -270,14 +270,7 @@ var app = {
 						
 							// Run game loop!
 							con.info("game start now!");
-	//    					game.init();
-							setTimeout(function() {
-	//    						gui.forcedDraw();
-	//    						$.mobile.loading('hide');
-	//    						gui.updateCanvasSize();
-								app.gameLoop();
-							}, 1000);
-	//    					app.gameLoop();
+							app.gameLoop();
 						});
 					});
 				});
