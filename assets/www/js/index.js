@@ -3,7 +3,7 @@
  * 
  * You only need to call "app.initialize()".
  * 
- * @author	Sebastian Pabel
+ * @author	Sebastian Pabel, Florian Schmidt
  * @version 2.0
  * @since	23.06.2013
  */

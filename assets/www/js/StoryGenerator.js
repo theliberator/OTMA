@@ -7,7 +7,7 @@
  * Original version 0.9 released on 12.06.2012 by Michael Seider
  * Rewritten on 23.06.2013 by Sebastian Pabel
  *
- * @author	Michael Seider, Sebastian Pabel
+ * @author	Michael Seider, Sebastian Pabel, Florian Schmidt
  * @version 2.0
  * @since	23.06.2013
  */
