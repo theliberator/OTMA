@@ -32,7 +32,7 @@
 		 the first talkevent, talkevent mode is set to random. -->
 	<!--
 	<event id="andi_a">
-		<action type="dialog" headline="Andi:">Hello, this is the first Dialog! There will be a second one!</action>
+		<action type="dialog" headline="Andi:">Hello, this is the first dialog! There will be a second one!</action>
 		<action type="sleep" value="1000"/>
 	    <action type="dialog" headline="Andi:">I'm just running around in circles! Don't worry, I'm fine!</action>
 		<action type="set_te_mode" value="rand"/>
@@ -138,7 +138,7 @@
 	<event id="dont_leave">
 	    <action type="stop"/>
 	    <action type="walk" direction="up"/>
-	    <action type="dialog">I still have to do something before getting my Ph.D.!</action> 
+	    <action type="dialog">I still have to do something before getting my PhD!</action> 
 	</event>
 
 	<event id="closed_room_left">
@@ -220,7 +220,7 @@
 	<event id="LECTURER_MISSING_ITEM">
 		<action type="random_dialog" headline="Lecturer:">
 			<text>Hmm, have you seen my wireless presenter?</text>
-			<text>Where did i put that thing.</text>
+			<text>Where did I put that thing.</text>
 			<text>I just had it in my hands and now it's gone?</text>
 		</action>
 	</event>
@@ -234,7 +234,7 @@
 
 	<event id="LECTURER_READY">
 		<action type="random_dialog" headline="Lecturer:">
-			<text>Sorry, i'm giving a presentation right now. Pease have a seat!</text>
+			<text>Sorry, I'm giving a presentation right now. Please have a seat!</text>
 			<text>Ahh! Another one coming late. Sit down please.</text>
 			<text>The presentation already started. Please, sit down.</text>
 		</action>
@@ -279,7 +279,7 @@
 	    <action type="look" direction="up"/>
 	    <action type="play_sound" value="coffeeMachine"/>
 	    <action type="sleep" value="800"/>
-	    <action type="dialog" headline="Note:">After some thinking you get yourself a Coca-Cola Zero(R). It only gives you temporary refreshment but your conentration is increased by 50%!</action>
+	    <action type="dialog" headline="Note:">After some thinking you get yourself a Coca-Cola Zero(R). It only gives you temporary refreshment but your concentration is increased by 50%!</action>
 	    <action type="set_con_rel" value="+50"/>
 	    <action type="play_sound_gender" value="slurpCoffee"/>
 	</event>

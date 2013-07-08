@@ -17,7 +17,7 @@
 			<introduction>Alfred Holl is professor at the Department of Computer Sciences at the Georg Simon Ohm University of Applied Sciences, Nuremberg, Germany.
 			Homepage: http://www.informatik.fh-nuernberg.de/professors/holl/Personal/HollHome.htm
 			His main subject is information systems.
-			His areas of interest are all sorts of modeling, critique and theory of modeling, requirements engineering, epistemology (theory of knowledge), cognitive methods, languages and linguistics, history of mathematics, international university relations.
+			His areas of interest are all sorts of modelling, critique and theory of modelling, requirements engineering, epistemology (theory of knowledge), cognitive methods, languages and linguistics, history of mathematics, international university relations.
 			He is faculty member of OTM Academy and a specialist for linguistic aspects.
 			</introduction>
 		</person>
@@ -34,12 +34,12 @@
 		<person name="Anja Metzner" title="faculty member and organisation chair" gender="female">
 		    <introduction> Anja Metzner is a professor at the Faculty of Computer Sciences at the University of Applied Sciences Augsburg.
 			Her current research interests include omnipresent web systems, mobile and pervasive systems, software engineering, system design and databases.
-			As she received for herself some extraordinary supervision and phantastic help from
+			As she received for herself some extraordinary supervision and fantastic help from
 			the researcher community during her own PhD student time, she likes now to help others
 			in this situation. As former German PhD student at the Middlesex University in London UK,
 			she learned early about international teamwork and the advantages of networking together
 			with other researchers all over the world. Consequently, she enthusiastically looks forward
-			to the OTM Academy event, which she organises toghether with Peter Spyns. 						   
+			to the OTM Academy event, which she organises together with Peter Spyns. 						   
 			</introduction>
 		</person>
 		<person name="Peter Spyns" title="organisation chair" gender="male">
@@ -55,12 +55,12 @@
 			<description>Cooperative Information Systems (CIS) provide enterprises and user communities with flexible, scalable and intelligent services in large-scale networking environments. Building next generation CIS requires technical breakthroughs as well as dynamic, reliable and secure collaborative information technologies to overcome the tough challenges that traditional rigid distributed systems did not face. A particular challenge in modern enterprises and entire supply chains is providing flexible and real-world aware CIS that enable users to quickly react to environmental changes as well as to evolving needs (e.g., by continuously and dynamically adapting CIS).
 			The CIS paradigm has traditionally encompassed distributed systems technologies such as middleware, business process management (BPM) and Web technologies. In recent years, several innovative technologies have emerged: SaaS, cloud computing, Internet of Service, Internet of Things, Service Oriented Computing, mash-ups, Web Services, Semantic Web and Knowledge Grid. These new technologies have increased the need for a tighter integration of data and knowledge with business processes, workflows as well as with collaborative process settings such as process choreographies. This trend is also reflected in areas such as data- or artifact-centric workflows and business process compliance as well as in finding new ways of analyzing data and processes in a combined manner.
 			CIS applications are heavily distributed and highly coordinated, often exhibiting inter-organizational interaction patterns and requiring distributed access and sharing of computing and information resources. Typically they fall under the categories such as e-Business, e-Commerce, e-Government, e-Health, and e-Science.
- 			The CoopIS conference series has established itself as a major international forum for exchanging ideas and results on scientific research for practitioners in fields such as computer supported cooperative work (CSCW), middleware, Internet und Web data management, electronic commerce, business process management, agent technologies, and software architectures, to name a few. In addition, the 2012 edition of CoopIS aims at highlighting the increasing need for data- and knowledge-intensive processes.
+ 			The CoopIS conference series has established itself as a major international forum for exchanging ideas and results on scientific research for practitioners in fields such as computer supported cooperative work (CSCW), middleware, Internet and Web data management, electronic commerce, business process management, agent technologies, and software architectures, to name a few. In addition, the 2012 edition of CoopIS aims at highlighting the increasing need for data- and knowledge-intensive processes.
 			As in previous years, CoopIS'12 will be part of a joint event with other conferences, in the context of the OTM ("OnTheMove") federated conferences, covering different aspects of distributed information systems.
 			</description>
 		</conference>
 		<conference title="Symposium on Secure Virtual Infrastructures" abrv="DOA-SVI'12" room="7">
-			<description>DOA-SVI'12 is the second International Symposium on Secure Virtual Infrastructures, organized as a component conference of the OnTheMove Federated Conferences und Workshops. This year's OTM event will be held in Rome, Italy,  from 10 - 14 September 2012.
+			<description>DOA-SVI'12 is the second International Symposium on Secure Virtual Infrastructures, organized as a component conference of the OnTheMove Federated Conferences and Workshops. This year's OTM event will be held in Rome, Italy,  from 10 - 14 September 2012.
 			Current and future software needs remain focused towards the development and deployment of large and complex intelligent and networked information systems, required for the internet- and intranet-based systems in organizations, and covering a very wide range of application domains as well as technology and research issues.
 			MOTIVATION: Distributed computation is undergoing a radical paradigm shift, where users and developers alike are becoming fully decoupled from the technology infrastructure where their applications are executed. Computations details are abstracted by an increasingly deep virtualization layer, veiling distributed execution by means of the same "cloud" that supports it. Together, the notion of Cloud Computing and the related one of service-orientation are enabling new business models based on the seamless provision of dynamically scalable, virtualized resources as services made available “over the cloud”, to be accessed via a web browser.
 			For this vision to be realised, a number of problems need to be solved, involving the nuts-and-bolts of virtualization as well as the reliability, scalability, security and distribution transparency of cloud-based computations, and the abstractions leading their development (e.g. service composition versus on-line architectural transformations). Along with the rapid evolution of these fields, the Cloud vision requires a huge research and development effort in the underlying technologies, whose advances will broaden the scope of the Cloud's applicability.
@@ -113,4 +113,10 @@
       - a friendly and fun atmosphere (several OTM social events) to meet other Ph.D. students and researchers in a nice and sunny place close to many cultural heritage sites (Rome, Italy).
       Just visit our website at http://www.onthemove-academy.org/ for more information.
 	</otmainfo>
+	
+	<texts>
+		<text id="hint_collected1">Listen carefully. What I will give you now will help you on your way to the OTMA conference.</text>
+		<text id="hint_collected2">Did you know about this already?</text>
+		<text id="hint_collected3">I can give you some advice.</text>			
+	</texts>
 </config>

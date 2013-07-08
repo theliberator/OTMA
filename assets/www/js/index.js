@@ -231,50 +231,48 @@ var app = {
     	
     	// load config file
     	// used as callback later
-    	var loadMoreStuff = function() {
-			configLoader.loadTextsXML(app.resDir + 'xml/', function() {
+    	var loadMoreStuff = function() {			
+			configLoader.loadLayoutXML(app.resDir + 'xml/', function() {
+
+				configLoader.loadEventsXML(app.resDir +  'xml/', function() {
+
+					con.debug("after xml config load");
 			
-				configLoader.loadLayoutXML(app.resDir + 'xml/', function() {
+					var story = StoryGenerator.getInstance();
+					story.generateLevels();
+			
+					var map = Map.getInstance();
+					map.init(mapFile, function() {
+						//this is the callback function which will be called after the map has been set up
 
-					configLoader.loadEventsXML(app.resDir +  'xml/', function() {
+						con.debug("map_init done");
 
-						con.debug("after xml config load");
-				
-						var story = StoryGenerator.getInstance();
-						story.generateLevels();
-				
-						var map = Map.getInstance();
-						map.init(mapFile, function() {
-							//this is the callback function which will be called after the map has been set up
-
-							con.debug("map_init done");
-
-							var animationMgr = AnimationMgr.getInstance();
-							con.debug("init animationMgr done");
-							var soundModule = SoundModule.getInstance();
-							con.debug("init SoundModule done");
-							var dialogMgr = DialogMgr.getInstance();
-							con.debug("init DialogMgr done");
-							var gui = Renderer.getInstance();
-							con.debug("init Renderer done");
-							var game = EventManager.getInstance();
-							con.debug("init EventManager done");
+						var animationMgr = AnimationMgr.getInstance();
+						con.debug("init animationMgr done");
+						var soundModule = SoundModule.getInstance();
+						con.debug("init SoundModule done");
+						var dialogMgr = DialogMgr.getInstance();
+						con.debug("init DialogMgr done");
+						var gui = Renderer.getInstance();
+						con.debug("init Renderer done");
+						var game = EventManager.getInstance();
+						con.debug("init EventManager done");
+					
+						// Init hints.
+						storage.initHints();
+						con.debug("initHints done");
 						
-							// Init hints.
-							storage.initHints();
-							con.debug("initHints done");
-							
-							// Update GUI.
-							$("#hints_btn .ui-btn-text").text(
-								"Hints (" + storage.getUnlockedAchievements().length + "/6)");
-						
-							// Run game loop!
-							con.info("game start now!");
-							app.gameLoop();
-						});
+						// Update GUI.
+						$("#hints_btn .ui-btn-text").text(
+							"Hints (" + storage.getUnlockedAchievements().length + "/6)");
+					
+						// Run game loop!
+						con.info("game start now!");
+						app.gameLoop();
 					});
 				});
 			});
+			
     	};
     	var downloader = Downloader.getInstance();
     	downloader.fileExists(downloader.basePath + "/" + configLoader.getConfigFilename(), 

@@ -152,6 +152,12 @@ XMLConfigLoader.prototype.loadOtmaXML = function(path, callback)
 			self.map.events[e.id] = e;
 		});
 		
+		// other texts
+		$(data).find('text').each(function() {
+			var id = $(this).attr('id');
+			self.otma.texts[id] = $(this).text();
+		});
+		
 		callback();
 	});
 };
@@ -365,20 +371,4 @@ XMLConfigLoader.prototype.loadEventsXML = function(path, callback)
 		callback();
 	});
 	
-};
-
-/* Load and parse map events related stuff. */
-XMLConfigLoader.prototype.loadTextsXML = function(path, callback)
-{
-	var self = this;
-	//con.debug('loading event xml file: ' + path + this.getMapEventsFilename());
-
-	$.get(path + self.getMapTextsFilename(), function(data) {
-		//data contains the xml file as document object.
-		$(data).find('text').each(function() {
-			var id = $(this).attr('id');
-			self.otma.texts[id] = $(this).text();
-		});
-		callback();	
-	});	
 };
