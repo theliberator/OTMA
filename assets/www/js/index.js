@@ -268,14 +268,7 @@ var app = {
     				
     					// Run game loop!
     					con.info("game start now!");
-//    					game.init();
-    					setTimeout(function() {
-//    						gui.forcedDraw();
-//    						$.mobile.loading('hide');
-//    						gui.updateCanvasSize();
-    						app.gameLoop();
-    					}, 1000);
-//    					app.gameLoop();
+						app.gameLoop();
     				});
     			});
     		});
