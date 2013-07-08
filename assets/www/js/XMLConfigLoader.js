@@ -14,7 +14,7 @@
  * Original version 0.9 released on 19.05.2012 by Michael Seider
  * Rewritten on 23.06.2013 by Sebastian Pabel
  *
- * @author	Michael Seider, Sebastian Pabel
+ * @author	Michael Seider, Sebastian Pabel, Florian Schmidt
  * @version 2.0
  * @since	23.06.2013
  */
@@ -32,6 +32,7 @@ function XMLConfigLoader() {
 	var configFilename = 'otma-config.xml';
 	var layoutFilename = 'mapLayout.xml';
 	var mapEventsFilename = 'mapEvents.xml';
+	var mapTextsFilename = 'mapTexts.xml';
 	
 	this.getConfigFilename = function() {
 		return configFilename;
@@ -42,12 +43,17 @@ function XMLConfigLoader() {
 	this.getMapEventsFilename = function() {
 		return mapEventsFilename;
 	};
+	
+	this.getMapTextsFilename = function() {
+		return mapTextsFilename;
+	};
 };
 //variables
 XMLConfigLoader.prototype.otma = {
 	persons: [],
 	otma_events: [],
 	hints: [],
+	texts: {},
 	roomsLayoutUpper: [],
 	roomsLayoutLower: [],
 	entry_teleports: [],
@@ -73,6 +79,7 @@ XMLConfigLoader.prototype.reset = function() {
 		persons: [],
 		otma_events: [],
 		hints: [],
+		texts: {},
 		roomsLayoutUpper: [],
 		roomsLayoutLower: [],
 		entry_teleports: [],
@@ -129,7 +136,7 @@ XMLConfigLoader.prototype.loadOtmaXML = function(path, callback)
 		$(data).find('hint').each(function() {
 			self.otma.hints.push({
 				title: $(this).attr('title'),
-				text: $(this).find('text').text()
+				text: $(this).text()
 			});
 		});
 		
@@ -139,7 +146,7 @@ XMLConfigLoader.prototype.loadOtmaXML = function(path, callback)
 			var action = {
 				type: 'dialog',
 				img: 'img/otma_logo_s.jpg',
-				text: $(this).find('text').text()
+				text: $(this).text()
 			};
 			e.addAction(action);
 			self.map.events[e.id] = e;
@@ -358,4 +365,20 @@ XMLConfigLoader.prototype.loadEventsXML = function(path, callback)
 		callback();
 	});
 	
+};
+
+/* Load and parse map events related stuff. */
+XMLConfigLoader.prototype.loadTextsXML = function(path, callback)
+{
+	var self = this;
+	//con.debug('loading event xml file: ' + path + this.getMapEventsFilename());
+
+	$.get(path + self.getMapTextsFilename(), function(data) {
+		//data contains the xml file as document object.
+		$(data).find('text').each(function() {
+			var id = $(this).attr('id');
+			self.otma.texts[id] = $(this).text();
+		});
+		callback();	
+	});	
 };

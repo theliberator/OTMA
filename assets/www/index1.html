@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+<html>
+  <!-- OTMA Game - single HTML Page
+  	The OTMA Game consists of a single HTML file (this file).
+  	First all required js-libs, css files and our own js-modules are included (<head>-tag).
+  	Second (body-tag):
+  	- all used audio-files, played during game, are included as audio-tag
+  	- all pages, used inside the game, are defined as jquery-mobile-page (see jquery mobile doc) -->
+  <head>
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+	<link rel="stylesheet" href="js/jquery.mobile-1.3.1.min.css" />
+	<link href="res/facebox/facebox.css" type="text/css" rel="stylesheet" />
+    <title>OTMA Game</title>
+	  <link rel="stylesheet" href="master.css" type="text/css" media="screen" title="no title">
+	  <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/jquery-2.0.2.min.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/jquery.mobile-1.3.1.min.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="otma_map.js"></script>
+      <script type="text/javascript" charset="utf-8" src="res/facebox/facebox.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/AStar.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/helperFunctions.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Tileset.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/EventManager.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Renderer.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Dialog.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/ColorPicker.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/SoundModule.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Storage.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Animations.js"></script>
+	  
+	  <script type="text/javascript" charset="utf-8" src="js/XMLConfigLoader.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/StoryGenerator.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Event.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/EventTrigger.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/NPC.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Teleport.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Downloader.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/Map.js"></script>
+	  <script type="text/javascript" charset="utf-8" src="js/index.js"></script>
+	  <script type="text/javascript">
+	  	//console config
+  		//var con = console; //debug
+  		//production
+  		var con = {
+  				log: function() {},
+  				error: function() {},
+  				debug: function() {},
+  				info: function() {}
+  		}
+  		
+  		//start the app
+	  	app.initialize(); 		
+		});
+	  </script>
+	  <script type="text/javascript">
+		function testTextLoader() {
+			var configLoader = XMLConfigLoader.getInstance();
+	  		configLoader.loadTexts('res/xml/', function() {
+			});
+		};
+	  </script>
+  </head>
+  <body id="main"> 
+	<button onclick=testTextLoader()>Load text</button>  
+  </body>
+</html>

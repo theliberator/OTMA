@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- All texts that are not already located in mapEvents.xml or otma-config.xml go here.-->
+<texts>
+	<text id="TestText">Blablabla</text>
+	<text id="hint_collected1">Listen carefully. What I will give you now will help you on your way to the OTMA conference.</text>
+	<text id="hint_collected2">Did you know about this already?</text>
+	<text id="hint_collected3">I can give you some advice.</text>			
+</texts>
+	

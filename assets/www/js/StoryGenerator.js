@@ -194,10 +194,18 @@ StoryGenerator.prototype.generateHints = function(hints, npcs)
 	for (var i in hints) {
 		/* Generate hints events. */
 		var event = new Event(helper.concat("GEN_EVENT_HINT", [i]));
-		//TODO: don't like the hardcoded text.
-		var text = ["Listen carefully. What i will give you now will help you on your way to the OTMA conference.",
-			"Did you know about this already?",
-			"I can give you some advice."];
+		
+		var configLoader = XMLConfigLoader.getInstance();
+
+		var text = [];
+		text.push(configLoader.otma.texts['hint_collected1']);
+		text.push(configLoader.otma.texts['hint_collected2']);
+		text.push(configLoader.otma.texts['hint_collected3']);
+		
+				//TODO: don't like the hardcoded text.
+		// var text = ["Listen carefully. What I will give you now will help you on your way to the OTMA conference.",
+			// "Did you know about this already?",
+			// "I can give you some advice."];
 		event.addAction({
 			type: "random_dialog",
 			text: text

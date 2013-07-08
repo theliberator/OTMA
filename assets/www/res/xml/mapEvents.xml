@@ -192,7 +192,7 @@
 	    <action type="dialog" headline="Doorman:">Hey, have you collected all hints? No? So I cannot let you in this room! Sorry!</action>
 	</event>
 	<event id="doorman_otma_opened">
-	    <action type="dialog" headline="Doorman:">Hey, you managed to get all hints? Wow! You should enter this room to get the importand infos about OTMA now!</action>
+	    <action type="dialog" headline="Doorman:">Hey, you managed to get all hints? Wow! You should enter this room to get the important infos about OTMA now!</action>
 	</event>
 	
 	<event id="NOT_ENOUGH_CON">
@@ -252,7 +252,7 @@
 
 	<event id="TE_GIVE_HINT">
 		<action type="linear_dialog" headline="Listener:">
-			<text>Listen carefully. What i will give you now will help you on
+			<text>Listen carefully. What I will give you now will help you on
 				your way to the OTMA conference.</text>
 			<text>Did you know about this already?</text>
 			<text>Let me give you some advice.</text>
