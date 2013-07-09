@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Dialog.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Dialog.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
+ */
+ 
+ /**
+ * @classdesc Handles all in-game dialogs. 
+ * - create DialogMgr object
+ * - create Dialog object
+ * - use DialogMgr.openDialog to show the Dialog
+ * - wait till Dialog closes trough user action OR:
+ * - call DialogMgr.closeDialog() to close dialog manually
+ */
+ 
+/**
+ * Used to access DialogMgr.
+ *
+ * @returns {DialogMgr} The singleton instance.
+ */
+DialogMgr.getInstance = function()
+{
+	if (DialogMgr.instance == undefined) {
+		DialogMgr.instance = new DialogMgr();
+	}
+		
+	return DialogMgr.instance;
+}
+
+/**
+ * Constructor, should not be used from outside.
+ * Use getInstance() instead.
+ *
+ * @constructor
+ * @returns {DialogMgr} 
+*/
+function DialogMgr() {}
+
+/**
+ * @property {object} dialog The current dialog.
+*/
+DialogMgr.prototype.dialog = null;
+
+/**
+ * Split text into chunks.
+ *
+ * @param {string} long_text The text to split.
+ * @param {number} max_text_length The maximum size of a chunk.
+ * @returns {object} Array of strings.
+ */
+function splitText(long_text, max_text_length)
+{
+	var result = [];
+	var text = long_text.split(" ");
+	var i = 0;
+	while (i &lt; text.length)
+	{
+		var line = text[i];
+		i++;
+		while (line.length &lt; max_text_length && i &lt; text.length)
+		{
+			line = line + " " + text[i];
+			i++;
+		}
+		result.push(line);
+	}
+	return result;
+}
+
+/**
+ * Gets the visible style.
+ *
+ * @returns {string} Visible style.
+ */
+function getVisibleStyle(visible)
+{
+	var visible_style = "";
+	
+	if (visible == false)
+	{
+		visible_style = "none";
+	}
+	
+	return visible_style;
+}
+
+/**
+ * Set display style of element.
+ *
+ * @param {string} name Name of the element.
+ *
+ * @returns {string} Visible style.
+ */
+function setElementStyle(name, display)
+{
+	var el = document.getElementById(name);
+	el.style.display = display;
+}
+
+/**
+ * Opens a dialog.
+ *
+ * @param {object} name The dialog to open.
+ */
+DialogMgr.prototype.openDialog = function(dialog)
+{	
+	if (dialog.texts == undefined) {
+		return;
+	}
+
+	this.dialog = dialog;
+	var self = this;
+	
+	var ddiv = document.createElement("div");
+	ddiv.setAttribute("id", "dialog");
+	ddiv.setAttribute("class", "visible " + dialog.dclass);
+	if (dialog.headline != undefined)
+	{
+		ddiv.innerHTML += "&lt;h1>" + dialog.headline + "&lt;/h1>";
+	}
+	if (dialog.img != undefined)
+	{
+		ddiv.innerHTML += "&lt;img class=\"otmaperson\" id=\"dialog_img\" src=\"" + dialog.img + "\"/>&lt;br>";
+	}
+	ddiv.innerHTML += "&lt;div id=\"dialog_text\">TEXT&lt;/div>&lt;br>";
+	jQuery.facebox(ddiv, undefined, function() {self.closeDialog(true);});
+	var close_btn = document.getElementById("close_facebox");
+	close_btn.src = app.resDir + "facebox/nextlabel.gif";
+	close_btn.onclick = function() { self.nextDialog(); };
+	self.updateDialog();
+};
+
+/**
+ * Updates text of current dialog.
+ */
+DialogMgr.prototype.updateDialog = function()
+{	
+	// this.dialog = dialog;
+	$("#dialog_text").html(this.dialog.getCurrentText());
+	
+	if (this.dialog.isLastPage())
+	{
+		var next_link = document.getElementById("close_facebox");
+		next_link.src = app.resDir + "facebox/closelabel.gif";
+	}
+};
+
+/**
+ * Show next page of current dialog or close it if last page is reached.
+ */
+DialogMgr.prototype.nextDialog = function()
+{
+	var self = this;
+	if (self.dialog.isLastPage())
+	{
+		self.closeDialog();
+	} else {
+		self.dialog.next();
+		self.updateDialog();
+	}
+};
+
+/**
+ * Closes current dialog.
+ */
+DialogMgr.prototype.closeDialog = function(alreadyClosing)
+{
+	if (alreadyClosing != true) {
+		$(document).trigger('close.facebox');
+		// return imediately, this funtion will be called a second time when dialog is vanished.
+		return;
+	}
+	
+	if (this.dialog == null){
+		return;
+	}
+
+	var old = this.dialog;
+	this.dialog = null;
+	setTimeout(function() {old.callback(old);});
+	delete old;
+	
+	/*var ddiv = document.getElementById("dialog");
+	ddiv.parentNode.removeChild(ddiv);*/
+};
+
+/**
+ * Function to check if current dialog is set.
+ * 
+ * @returns {boolean} True if current dialog is set, otherwise false.
+ */
+DialogMgr.prototype.hasActiveDialog = function()
+{
+	return (this.dialog != null);
+};
+
+/**
+ * Function to get the current dialog.
+ * 
+ * @returns {Dialog} The current dialog.
+ */
+DialogMgr.prototype.getActiveDialog = function()
+{
+	if (this.hasActiveDialog()) {
+		return this.dialog;
+	} else {
+		return null;
+	}
+};
+
+/**
+ * Creates a new instance of Dialog.
+ *
+ * @constructor
+ * @param dclass string dialog class
+ * @param headline string the dialog headline
+ * @param img Object Image object
+ * @param text string/array the dialog text
+ * @param callback function will be called after the dialog has been closed
+ */
+function Dialog(dclass, headline, img, text, callback)
+{
+	if (callback == undefined) {
+		callback = function(){};
+	}
+	this.callback = callback;
+	this.headline = headline;
+	this.img = img;
+	if (text instanceof Array) {
+		this.texts = text;
+	} else {
+		this.texts = splitText(text, 190);
+	}
+	this.textpos = 0;
+	this.dclass = dclass;
+}
+
+Dialog.prototype.getCurrentText = function()
+{
+	return this.texts[this.textpos];
+};
+
+Dialog.prototype.isLastPage = function()
+{
+	return (this.textpos >= (this.texts.length-1));
+};
+
+Dialog.prototype.next = function()
+{
+	this.textpos++;
+	if (this.textpos >= this.texts.length)
+	{
+		return false;
+	}
+	return true;
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AnimationMgr.html">AnimationMgr</a></li><li><a href="AnimationPlayerMove.html">AnimationPlayerMove</a></li><li><a href="AnimationTargetHighlight.html">AnimationTargetHighlight</a></li><li><a href="Dialog.html">Dialog</a></li><li><a href="DialogMgr.html">DialogMgr</a></li><li><a href="Downloader.html">Downloader</a></li><li><a href="Event.html">Event</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="EventTrigger.html">EventTrigger</a></li><li><a href="Map.html">Map</a></li><li><a href="NPC.html">NPC</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SoundModule.html">SoundModule</a></li><li><a href="Storage.html">Storage</a></li><li><a href="StoryGenerator.html">StoryGenerator</a></li><li><a href="Teleport.html">Teleport</a></li><li><a href="Tileset.html">Tileset</a></li><li><a href="XMLConfigLoader.html">XMLConfigLoader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#AStar">AStar</a></li><li><a href="global.html#getVisibleStyle">getVisibleStyle</a></li><li><a href="global.html#helper">helper</a></li><li><a href="global.html#manhattan">manhattan</a></li><li><a href="global.html#setElementStyle">setElementStyle</a></li><li><a href="global.html#splitText">splitText</a></li><li><a href="global.html#successors">successors</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Jul 09 2013 16:35:26 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

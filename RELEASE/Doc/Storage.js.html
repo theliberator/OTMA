@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Storage.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Storage.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/** 
+ * Rewritten by Sebastian Pabel on 22.06.2013
+ * 
+ * @author Tobias Sielaff, Sebastian Pabel
+ * @version 2.0
+ * @since 22.06.2013
+ */
+ 
+ /**
+ * @classdesc Handles hints and highscores. Also provides save and load methods
+ * to pause/resume the game at any given game state.
+ * 
+ * How is saving done?
+ * Saving takes the this.data object (containing hints, highscores and the current player),
+ * serializes the object to string and saves it to the local storage. Loading is done vice-versa.
+ */
+
+ /**
+ * Used to access Storage.
+ *
+ * @returns {Storage} The singleton instance.
+ */
+Storage.getInstance = function()
+{
+	if (Storage.instance == undefined) 
+		Storage.instance = new Storage();
+		
+	return Storage.instance;
+}
+
+/**
+ * Constructor, should not be used from outside.
+ * Use getInstance() instead.
+ *
+ * @constructor
+ * @returns {Storage} 
+*/
+function Storage()
+{
+	// Init.
+	if (localStorage > 0 && localStorage.data.length > 0) {
+		this.load();
+	} else {
+		this.reset(false);
+	}
+}
+
+/**
+* @property {object} achievements Array containing achievements.
+*/
+Storage.prototype.achievements = {};
+
+/**
+* @property {boolean} isPagesInit Indicates if pages are initialized.
+*/
+Storage.prototype.isPagesInit = false;
+
+/**
+* @property {object} data Contains the JSON data.
+*/
+Storage.prototype.data = null;
+
+/**
+* @property {object} lastTime Last time data was loaded.
+*/
+Storage.prototype.lastTime = null;
+
+//Highscore constants
+Storage.prototype.weightTime = 0.00001;
+Storage.prototype.weightSteps = 0.0001;
+Storage.prototype.weightClicks = 0.0002;
+Storage.prototype.weightDialogs = 0.0003;
+Storage.prototype.maxScore = 10000;
+Storage.prototype.minScore = 100;
+
+/**
+ * Saves data to the local storage.
+ */
+Storage.prototype.save = function()
+{
+	if (app.platform != 'Web') {
+		//we dont use "this" in here, because this method will be called by an event handler. And "this" would be
+		//the event in this scope
+		
+		// Update time before saving.
+		Storage.getInstance().updateTime();
+		
+		// Save.
+		localStorage.data = JSON.stringify(Storage.getInstance().data);
+	}
+};
+
+/**
+ * Loads data from the local storage.
+ */
+Storage.prototype.load = function()
+{
+	// Load.
+	this.data = JSON.parse(localStorage.data);
+	
+	// Init last time.
+	var d = new Date();
+	this.lastTime = d.getTime();
+};
+
+/**
+ * Resets the local storage and calls save afterwards.
+ *
+ * @param {boolean} retainHighscores If set to true the highscores will be kept.
+ * @see Storage.save()
+ */
+Storage.prototype.reset = function(retainHighscores)
+{
+	var self = this;
+	self.data = {
+		stats: {
+			curTime: 0,
+			curSteps: 0,
+			curClicks: 0,
+			curDialogs: 0
+		},
+		achievements: {
+			unlocked: []
+		},
+		highscores: {
+			highscore: []
+		},
+		player: {
+			name: null,
+			gender: null,
+			hairColor: null,
+			clothColor: null
+		}
+	};
+	
+	if (retainHighscores) {
+		// Load local storage.
+		
+		if (localStorage.length == 0 || localStorage.data == undefined || localStorage.data.length == 0) {
+			return; //nothing to load
+		}
+		var data = JSON.parse(localStorage.data);
+		
+		// Null out everything but the highscores.
+		self.data.highscores = data.highscores;
+	}
+	
+	// Save.
+	this.save();
+};
+
+/**
+ * Initializes the pages and sets isPagesInit to true if successful.
+ */
+Storage.prototype.initPages = function() {
+	var self = this;
+	// Setup checkboxes.
+	for (name in self.achievements) {
+		// Create selector (no # because of stupid jquery syntax)
+		var sel = "hint_" + self.achievements[name].id;	
+		
+		// Set label.
+		$("label[for='" + sel + "']").text(self.achievements[name].name);
+		
+		// Prevent manual changes
+		$("#" + sel).change(function () {
+			$(this).attr("checked", !this.checked);
+		});
+		
+		// Give desc
+		$("#" + sel).click(function () {
+			ach = self.achievements[$(this).attr('id').toUpperCase()];
+					
+			if (self.hasAchievementUnlocked(ach.id)) {
+				// http://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+				var regExp = /[-a-zA-Z0-9@:%_\+.~#?&//=]{2,256}\.[a-z]{2,4}\b(\/[-a-zA-Z0-9@:%_\+.~#?&//=]*)?/gi;
+				var url = ach.desc.match(regExp) + "";
+				
+				// Phonegap present?
+				if (navigator.notification) {
+					// Native confirm dialog.
+					navigator.notification.confirm(
+						'Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!',
+						function(button) {	
+							// 1 == ok, 2 == cancel
+							if (button == 1) {
+								// Save game state.
+								self.save();
+								
+								//only android supports the navigator.app api
+								if (device.platform == 'Android') {
+									navigator.app.loadUrl(url, { openExternal: true });
+								} else {
+									window.location.href = url;
+								}
+							}
+						},
+						'Confirm', 
+						'Ok,Cancel'
+					);
+				} else {
+					ret = confirm('Do you want to visit the OTMA website for futher information on this hint? Any unsaved progress might be lost!');
+					if (ret) {
+						window.location = url;
+					}
+				}
+			}
+		});
+	}
+	
+	self.isPagesInit = true;
+};
+
+/**
+ * Marks the unlocked achievements
+ */
+Storage.prototype.markUnlockedAchievements = function() {
+	var self = this;
+	for (name in self.achievements) {
+		if (self.hasAchievementUnlocked(self.achievements[name].id)) {
+			// Create selector
+			$("#hint_" + self.achievements[name].id).attr("checked", true).checkboxradio("refresh");
+		}
+	}
+};
+
+/**
+ * Draws the stats page.
+ */
+Storage.prototype.drawStats = function() {
+	var self = this;
+	// Update time before drawing.
+	self.updateTime();
+
+	// Print.
+	$("label[for='stats-1']").text(self.getPlayedTime() + " seconds");
+	$("label[for='stats-2']").text(self.getSteps());
+	$("label[for='stats-3']").text(self.getClicks());
+	$("label[for='stats-4']").text(self.getDialogs());
+};
+
+/**
+ * Updates the time in the stats.
+ */
+Storage.prototype.updateTime = function()
+{
+	var self = this;
+	var d = new Date();
+	var time = d.getTime();
+	
+	if (time >= this.lastTime) {
+		self.data.stats.curTime += ((d.getTime() - self.lastTime) / 1000) | 0;
+		self.lastTime = d.getTime();
+	}
+};
+
+/**
+ * Loads hints from the XML file.
+ */
+Storage.prototype.initHints = function()
+{
+	var self = this;
+	var configLoader = XMLConfigLoader.getInstance();
+	// Load achievements.
+	for (var i in configLoader.otma.hints) {
+		var hint = {};
+		hint.id = i;
+		hint.name = configLoader.otma.hints[i].title;
+		hint.desc = configLoader.otma.hints[i].text;
+		self.achievements["HINT_" + i] = hint;
+	}
+}
+
+/**
+ * Updates steps count.
+ *
+ * @param {int} steps (optional) Number of steps to add to. If this value is not set, the current value will be incremented.
+ */
+Storage.prototype.incSteps = function(steps)
+{
+	if (steps == undefined) {
+		steps = 1;
+	}
+	this.data.stats.curSteps += steps;
+};
+
+/**
+ * Updates clicks count
+ * @param {int} clicks (optional) Number of clicks to add to. If this value is not set, the current value will be incremented.
+ */
+Storage.prototype.incClicks = function(clicks)
+{
+	if (clicks == undefined) {
+		clicks = 1;
+	}
+	this.data.stats.curClicks += clicks;
+};
+
+/**
+ * Updates dialogs count.
+ 
+ * @param {int} dialogs (optional) Number of dialogs to add to. If this value is not set, the current value will be incremented
+ */
+Storage.prototype.incDialogs = function(dialogs)
+{
+	if (dialogs == undefined) {
+		dialogs = 1;
+	}
+	this.data.stats.curDialogs += dialogs;
+};
+
+/**
+ * Checks if there is a saved player.
+ */
+Storage.prototype.hasSavedPlayer = function()
+{
+	return (this.getName() != null && this.getGender() != null && this.getHairColor() != null && this.getClothColor() != null);
+};
+
+/**
+ * Unlocks an achievement.
+ *
+ * @param {string} name The name of the achievement.
+ * @param {function} callback A callback function that will be called after the achievement has been unlocked.
+ * @return True if the achievement exists, otherwise false.
+ */
+Storage.prototype.unlockAchievement = function(name, callback)
+{
+	var self = this;
+	
+	var ach = self.achievements[name];
+	if (!ach) {
+		return false;
+	}
+	
+	var dialogMgr = DialogMgr.getInstance();
+	
+	if (!self.hasAchievementUnlocked(ach.id)) {
+		self.data.achievements.unlocked.push(ach.id);
+		self.save();
+		dialogMgr.openDialog(new Dialog("talk", "Hint unlocked!", null, ach.desc, callback));
+			
+		// Update GUI.
+		$("#hints_btn .ui-btn-text").text("Hints (" + self.getUnlockedAchievements().length + "/6)");
+				
+		// Play sound.
+		SoundModule.getInstance().playSfx("achievementUnlocked");
+	} else {
+		dialogMgr.openDialog(new Dialog("talk", "Hint already received!", null, ach.desc, callback));
+	}
+};
+
+/**
+ * Checks if the given achievement is already unlocked.
+ *
+ * @param {string} id The id of the achievement.
+ * @return True if unlocked, otherwise false.
+ */
+Storage.prototype.hasAchievementUnlocked = function (id)
+{
+	var self = this;
+	for (var i = 0; i &lt; self.getUnlockedAchievements().length; i++) {
+		if (self.data.achievements.unlocked[i] == id) {
+			return true;
+		}
+	}
+	return false;
+};
+
+/**
+ * Creates the highscore view.
+ */
+Storage.prototype.createHighscoreView = function(){
+	var self = this;
+	for (var i = 0; i &lt; self.data.highscores.highscore.length; i++) {
+		var themeHeader = 'c';
+		var themeContent = 'c';
+		if (i == 0) {
+			themeHeader = 'e';
+			themeContent = 'e';
+		}
+		
+		$('&lt;div data-role="collapsible" data-mini="true" data-theme="' + themeHeader +'" data-content-theme="' + themeContent +'">\
+			&lt;h3>' + ((i&lt;9) ? '&nbsp;&nbsp;' + (i+1) : (i+1)) + '. ' + self.data.highscores.highscore[i].playerName + ':  ' + self.data.highscores.highscore[i].score + ' points&lt;/h3>\
+			&lt;table class="highscoreTable">\
+	        	&lt;tr>\
+		            &lt;td>&lt;label>Time: ' + self.data.highscores.highscore[i].time + '&lt;/label>&lt;/td>\
+		            &lt;td>&lt;label>Steps: ' + self.data.highscores.highscore[i].steps + '&lt;/label>&lt;/td>\
+		            &lt;td>&lt;label>Clicks: ' + self.data.highscores.highscore[i].clicks + '&lt;/label>&lt;/td>\
+		            &lt;td>&lt;label>Dialogs: ' + self.data.highscores.highscore[i].dialogs + '&lt;/label>&lt;/td>\
+		        &lt;/tr>\
+			&lt;/table>\
+		&lt;/div>')
+		.collapsible()
+		.appendTo('#highscoreContent');
+	}
+};
+
+/**
+ * Calculates the current score.
+ */
+Storage.prototype.calculateScore = function() {
+	var self = this;
+	var score = self.maxScore
+			* Math.exp(-(
+				self.weightTime * self.getPlayedTime() + 
+				self.weightSteps * self.getSteps() + 
+				self.weightClicks * self.getClicks() + 
+				self.weightDialogs * self.getDialogs()
+			));
+	score = Math.floor(score);
+	if (score &lt; self.minScore) {
+		score = self.minScore;
+	}
+	return score;
+}
+
+/**
+ * Saves the highscore and sorts it.
+ 
+ * @param {string} playerName The name of the current player.
+ */
+Storage.prototype.saveHighscore = function(playerName){
+	var self = this;
+	var highscore = new Object();
+	self.updateTime();
+	highscore.playerName = playerName;
+	highscore.score = this.calculateScore();
+	highscore.time = this.getPlayedTime();
+	highscore.steps = this.getSteps();
+	highscore.clicks = this.getClicks();
+	highscore.dialogs = this.getDialogs();
+	self.data.highscores.highscore.push(highscore);
+	self.data.highscores.highscore.sort(function(a,b){return b.score - a.score});
+	while(self.data.highscores.highscore.length > 10){
+		self.data.highscores.highscore.splice(self.data.highscores.highscore.length - 1,1);
+	}
+	this.save();
+};
+
+/* Getter and Setter */
+Storage.prototype.getPlayedTime = function()
+{
+	return this.data.stats.curTime;
+};
+
+Storage.prototype.getSteps = function()
+{
+	return this.data.stats.curSteps;
+};
+
+Storage.prototype.getClicks = function()
+{
+	return this.data.stats.curClicks;
+};
+
+Storage.prototype.getDialogs = function()
+{
+	return this.data.stats.curDialogs;
+};
+
+Storage.prototype.getName = function()
+{
+	return this.data.player.name;
+};
+
+Storage.prototype.getGender = function()
+{
+	return this.data.player.gender;
+};
+
+Storage.prototype.getHairColor = function()
+{
+	return this.data.player.hairColor;
+};
+
+Storage.prototype.getClothColor = function()
+{
+	return this.data.player.clothColor;
+};
+
+Storage.prototype.getUnlockedAchievements = function ()
+{
+	return this.data.achievements.unlocked;
+};
+/*---*/
+Storage.prototype.setName = function(name)
+{
+	this.data.player.name = name;
+};
+
+Storage.prototype.setGender = function(gender)
+{
+	this.data.player.gender = gender;
+};
+
+Storage.prototype.setHairColor = function(hairColor)
+{
+	this.data.player.hairColor = hairColor;
+};
+
+Storage.prototype.setClothColor = function(clothColor)
+{
+	this.data.player.clothColor = clothColor;
+};</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AnimationMgr.html">AnimationMgr</a></li><li><a href="AnimationPlayerMove.html">AnimationPlayerMove</a></li><li><a href="AnimationTargetHighlight.html">AnimationTargetHighlight</a></li><li><a href="Dialog.html">Dialog</a></li><li><a href="DialogMgr.html">DialogMgr</a></li><li><a href="Downloader.html">Downloader</a></li><li><a href="Event.html">Event</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="EventTrigger.html">EventTrigger</a></li><li><a href="Map.html">Map</a></li><li><a href="NPC.html">NPC</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SoundModule.html">SoundModule</a></li><li><a href="Storage.html">Storage</a></li><li><a href="StoryGenerator.html">StoryGenerator</a></li><li><a href="Teleport.html">Teleport</a></li><li><a href="Tileset.html">Tileset</a></li><li><a href="XMLConfigLoader.html">XMLConfigLoader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#AStar">AStar</a></li><li><a href="global.html#getVisibleStyle">getVisibleStyle</a></li><li><a href="global.html#helper">helper</a></li><li><a href="global.html#manhattan">manhattan</a></li><li><a href="global.html#setElementStyle">setElementStyle</a></li><li><a href="global.html#splitText">splitText</a></li><li><a href="global.html#successors">successors</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Jul 09 2013 16:35:26 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

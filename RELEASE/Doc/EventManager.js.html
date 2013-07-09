@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: EventManager.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: EventManager.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
+ */
+ 
+ /**
+ * @classdesc EventManager handles all game events after game started until it ends.
+ * 
+ * Example Jobs:
+ * - trigger pathfinder and player-walk-animation when user clicks on map
+ * - trigger talkevents of NPCs when player user want to to NPC
+ * - trigger teleports when enter/leave rooms or change level
+ * - Execute events asynchronously and recursive
+ * 
+ * How to use:
+ * - create EventManager object
+ * - call EventManager.timeEvent() repeatedly with a timer of about 33 ms
+ * - call EventManager.clickEvent() when user clicks on map
+ */
+
+ /**
+ * Used to access EventManager.
+ *
+ * @returns {EventManager} The singleton instance.
+ */
+EventManager.getInstance = function()
+{
+	if (EventManager.instance == undefined) {
+		EventManager.instance = new EventManager();
+	}
+		
+	return EventManager.instance;
+}
+
+/**
+ * Constructor, should not be used from outside.
+ * Use getInstance() instead.
+ *
+ * @constructor
+ * @returns {EventManager} 
+*/
+function EventManager()
+{
+	con.info('creating EventManager');
+	this.map = Map.getInstance();
+	this.animationMgr = AnimationMgr.getInstance();
+	this.soundModule = SoundModule.getInstance();
+	this.player = this.map.player;
+	this.dialogMgr = DialogMgr.getInstance();
+	this.storage = Storage.getInstance()
+	this.renderer = Renderer.getInstance();
+	
+	this.init();
+}
+/**@property {number} event_running 1 indicates that an event is executed momentarily.
+* 0 indicates that currently no events are executed.
+*/
+EventManager.prototype.event_running = 0;
+/**@property {number} G1Time (??).
+*/
+EventManager.prototype.G1Time = 0;
+/**@property {number} G1State (??).
+*/
+EventManager.prototype.G1State = 0;
+/**@property {boolean} was_walking True if player was walking in last loop,
+* otherwise false.
+*/
+EventManager.prototype.was_walking = true;
+/**@property {object} playerWalkJob Array of player walk jobs.
+*/
+EventManager.prototype.playerWalkJob = [];
+/**@property {object} conditions Dictionary of conditions.
+*/
+EventManager.prototype.conditions = {};
+
+/**
+ * Set singleton instance of EventManager to null, to trigger
+ * reinitialization on next call of 'getInstance()'.
+*/
+EventManager.prototype.reset = function() {
+	EventManager.instance = undefined;
+};
+
+/**
+ * Execute initial events.
+ */
+EventManager.prototype.init = function() {
+	var self = this;
+	for (var i in self.map.story.initialEvents) {
+		this.executeEventId(self.map.story.initialEvents[i]);
+	}
+
+	self.executeEventId("ZERO");
+	
+	if (self.storage.getUnlockedAchievements().length == 0) {
+		self.executeEventId("ZERO_II");
+	}
+}
+
+/**
+ * Registers an event.
+ *
+ * @param {object} event The event.
+ * @returns {number} 0 if no error, 1 if error
+ */
+EventManager.prototype.registerEvent = function(event)
+{
+	var self = this;
+	if (self.map.story.events[event.id] == undefined)
+	{
+		self.map.story.events[event.id] = event;
+		return 0;
+	} else {
+		con.warning("Event ID: " + event.id + " already registered.");
+		return 1;
+	}
+};
+
+/**
+ * Recursively execute actions of an event(for internal use only!).
+ *
+ * @param {number} nr Number of the action to start execution with.
+ * @param {Event} event The event to execute.
+ * @param {object} npc The NPC the event applies to.
+ * @param {function} onFinish Callback function called after event execution is finished.
+ */
+EventManager.prototype.recur_action_execute = function(nr, event, npc, onFinish)
+{
+	var self = this;
+
+    var stopEvent = function()
+    {
+		// enable clickEvents again!
+		self.event_running = self.event_running-1;
+        con.debug("end event (id: " + event.mEventID + "): counter value: " + self.event_running);
+        if (onFinish != undefined) onFinish();
+    };
+
+    var nextAction = function()
+    {
+        self.recur_action_execute(nr+1, event, npc, onFinish);
+    };
+
+	if (nr >= event.actions.length)
+	{
+        stopEvent();
+        return;
+	}
+	
+	var action = event.actions[nr];
+    con.debug(action);
+	switch (action.type)
+	{
+		case "execute_event":
+			self.executeEventId(action.value, undefined, nextAction);
+			return;
+		case "set_te_mode":
+			if (helper.contains(["all", "single", "rand"], action.value)) {
+				npc.te_mode = action.value;
+			} else {
+				con.error("talkevent mode not found: " + action.value);
+			}
+			break;
+		case "set_te_cntr_abs":
+			var val = parseInt(action.value);
+			if (val > npc.talkevents.length - 1 || val &lt; 0) {
+				con.error("talkevent counter set too high: " + val);
+				con.error("talkevents.length: " + npc.talkevents.length);
+			} else
+				npc.te_cntr = val;
+			break;
+		case "set_te_cntr_rel":
+			var val = parseInt(action.value);
+			npc.te_cntr = (npc.te_cntr + val) % npc.talkevents.length;
+			break;
+		case "del_event":
+			if (!self.map.delEvent(action.value, npc)) {
+				con.error("talkevent not found: " + action.value.id);
+			}
+			break;
+		case "del_npc":
+			if (!self.map.delNPC(action.value)) {
+				con.error("NPC not found: " + action.value);
+			}
+			self.renderer.forcedDraw();
+			break;
+		case "hint_collected":
+			self.storage.unlockAchievement("HINT_" + action.value, function() {
+				if (self.storage.getUnlockedAchievements().length == XMLConfigLoader.getInstance().otma.hints.length) {
+					self.executeEventId("E_ALL_HINTS_COLLECTED", undefined, nextAction);
+				} else {
+					nextAction();
+				}
+			});
+			return;
+		case "check_hints": // called after game start/continue (ZERO-Event)
+			if (self.storage.getUnlockedAchievements().length == XMLConfigLoader.getInstance().otma.hints.length) {
+				self.executeEventId("E_ALL_HINTS_COLLECTED", undefined, nextAction);
+			} else {
+				nextAction();
+			}
+			return;
+		case "set_con_rel":
+			var new_value = self.player.concentration + parseInt(action.value); 
+			if (new_value &lt; 0) {
+				self.executeEventId("NOT_ENOUGH_CON", undefined, stopEvent);
+				return;
+			} else {
+				self.player.concentration = new_value;
+			}
+			if (self.player.concentration > 100) {
+				self.player.concentration = 100;
+			}
+			con.debug("new concentration value: " + self.player.concentration);
+			$("#statustxt").text(self.player.concentration + "%");
+			break;
+		case "set_location":
+			var str = "";
+			if (action.value.length > 40) {
+				str = action.value.slice(0, 35) + "...";
+			} else {
+				str = action.value;
+			}
+			var locationElement = (document.getElementById("location"));
+			locationElement.innerHTML = str;
+			break;
+		case "set_location_hallway":
+			var locationElement = (document.getElementById("location"));
+			locationElement.innerHTML = "Level " + self.map.player.z + " Hallway";
+			break;
+		case "set_cond":
+			self.conditions[action.value] = true;
+			break;
+		case "unset_cond":
+			self.conditions[action.value] = false;
+			break;
+		case "dialog":
+		case "split_dialog":
+			self.renderer.draw();
+			var dialog = new Dialog("talk", action.headline, action.img, action.text, nextAction);
+			self.dialogMgr.openDialog(dialog);
+			return; // continue with actions after dialog ends
+		case "linear_dialog":
+			if (event.dialog_cntr == undefined) {
+				event.dialog_cntr = 0;
+			}
+			var dialog = new Dialog("talk", 
+					action.headline, action.img, action.text[event.dialog_cntr], nextAction);
+			self.dialogMgr.openDialog(dialog);
+			event.dialog_cntr = (event.dialog_cntr + 1) % action.text.length;
+			return; // continue with actions after dialog ends
+		case "random_dialog":
+			var ran = helper.rand(0, action.text.length);
+			var dialog = new Dialog("talk", 
+					action.headline, action.img, action.text[ran], nextAction);
+			self.dialogMgr.openDialog(dialog);
+			return; // continue with actions after dialog ends
+		case "change_level":
+			self.player.z += parseInt(action.value);
+			if (self.player.z > self.map.story.levels.length) {
+				self.player.z = self.map.story.levels.length;
+			} else if (self.player.z &lt; 0) {
+				 self.player.z = 0;
+			 }
+			con.debug("level: " + self.player.z);
+			self.renderer.forcedDraw();
+			break;
+		case "teleport":
+			self.teleportPlayer(action.to, action.direction);
+			break;
+		case "walk":
+			self.playerWalkJob.push(action.direction);
+			break;
+		case "look":
+			self.map.player.icon = self.map.player.ani_walk[action.direction][0];
+			break;
+		case "stop":
+			self.playerWalkJob = [];
+			break;
+		case "sleep":
+			setTimeout(nextAction, action.value);
+			return; // continue with actions after sleep ends
+		case "new_highscore":
+			self.storage.saveHighscore(this.player.name);
+			break;
+		case "show_highscore":
+			$.mobile.changePage( "#highscore", {} );
+			break;
+		case "play_sound":
+			SoundModule.getInstance().playSfx(action.value);
+			break;
+		case "play_sound_gender":
+			SoundModule.getInstance().playSfx(action.value + (this.player.gender == "female" ? "Female" : "Male"));
+			break;
+		default:
+			con.error("unknown action type:" + action);
+			break;
+	}
+	
+	// default: continue with execution of next action
+    nextAction();
+};
+
+/**
+ * Execute an event.
+ *
+ * @param {number} id Id of the event to to execute.
+ * @param {object} npc The NPC the event applies to.
+ * @param {function} onFinish Callback function called after event execution is finished.
+ */
+EventManager.prototype.executeEventId = function(id, npc, onFinish)
+{
+	var event = this.map.story.events[id];
+    event.mEventID = id;
+	
+	// at start: disable clickEvent:
+	this.event_running = this.event_running +1;
+
+	con.debug("event triggered (id:" + id + "), counter: " + this.event_running);
+	con.debug(event);
+	
+	// start execution with action 0
+	this.recur_action_execute(0, event, npc, onFinish); 
+};
+
+
+/**
+ * Executes walking job of player (processing and drawing).
+ *
+ * @param {number} time Parameter 'time' is currently unused.
+ */
+EventManager.prototype.timeEvent = function(time)
+{
+	var self = this;
+	// stop animations when dialog is open
+	if (this.dialogMgr.hasActiveDialog()) {
+		return;
+	}
+	
+	if (
+			(self.playerWalkJob.length > 0) && 
+			((self.playerWalkAni == undefined) || (self.playerWalkAni.ready == true))
+		)
+	{
+		self.processNextPlayerWalkJob();
+		self.was_walking = true;
+	}
+	else
+	{
+	}
+
+	if (
+			(self.playerWalkJob.length == 0) && (self.was_walking == true) &&
+			((self.playerWalkAni == undefined) || (self.playerWalkAni.ready == true))
+		)
+	{
+//		self.renderer.look_offset_x = 0;
+//		self.renderer.look_offset_y = 0;
+//		self.renderer.calcPosFromPlayerPos(self.player.x, self.player.y);
+		self.was_walking = false;
+	}
+	
+	self.renderer.draw();
+};
+
+/**
+ * Teleports a player.
+ *
+ * @param {object} to Target coordinates.
+ * @param {string} direction Set the direction the player is facing after teleport.
+ */
+EventManager.prototype.teleportPlayer = function(to, direction)
+{
+	this.playerWalkJob = [];
+	this.playerWalkJob.push(direction);
+	
+	this.player.x = to.x;
+	this.player.sx = to.x;
+	this.player.y = to.y;
+	this.player.sy = to.y;
+	//this.player.z = to.z;
+	
+	// update background pos
+	this.renderer.calcPosFromPlayerPos(this.player.x, this.player.y);
+};
+
+/**
+ * Recursively execute events.
+ *
+ * @param {number} nr Index of event to start execution with.
+ * @param {object} events An array of events.
+ * @param {object} npc The NPC the events apply to.
+ */
+EventManager.prototype.recur_event_execution = function(nr, events, npc)
+{
+    var self = this;
+
+    var nextEvent = function() { self.recur_event_execution(nr+1, events, npc); };
+
+    if (nr >= events.length) {
+    	return;
+    }
+
+    var e = events[nr];
+	if (this.checkCondition(e.condition)) {
+		this.executeEventId(e.id, npc, nextEvent);
+	} else {
+        nextEvent();
+	}
+};
+
+/**
+ * Recursively execute events, begin with first in array.
+ *
+ * @param {object} events An array of events.
+ * @param {object} npc The NPC the events apply to.
+ */
+EventManager.prototype.executeEventListWithCond = function(events, npc)
+{
+    this.recur_event_execution(0, events, npc);
+};
+
+/**
+ * Executes events of any teleport or event trigger the player hits after
+ * the player has reached the targeted position.
+ *
+ * @param {object} events An array of events.
+ * @param {object} npc The NPC the events apply to.
+ */
+EventManager.prototype.playerReachedPosEvent = function()
+{
+	var t = this.map.getTeleport(this.player.x, this.player.y, this.player.z);
+	
+	if (t != null)
+	{
+		if (t.onWalkOver || this.playerWalkJob.length == 0)
+		{
+			this.teleportPlayer(t.to, t.direction);
+			this.executeEventListWithCond(t.events);
+		}
+	}
+
+	var et = this.map.getEventTrigger(this.player.x, this.player.y, this.player.z);
+
+	if (et != null)
+	{
+		if (et.onWalkOver || this.playerWalkJob.length == 0)
+		{
+			this.executeEventListWithCond(et.events);
+		}
+	}
+};
+ 
+ /**
+ * Executes click event.
+ *
+ * @param {object} pos Click position.
+ */
+EventManager.prototype.clickEvent = function(pos)
+{	
+	var self = this;
+	self.storage.incClicks();
+	
+	if (self.event_running > 0)
+	{
+		// don't accept click events on canvas while event is running!
+		return; 
+	}
+	
+	if (self.dialogMgr.hasActiveDialog())
+	{
+		self.dialogMgr.closeDialog();
+		return;
+	}
+	
+	var moves = AStar(self.map, [self.player.sx, self.player.sy], [pos.x, pos.y]);
+	
+	if (moves.length > 0) {
+		var targetAni = new AnimationTargetHighlight(self.map.target, [0,1,2,3], 10, pos.x, pos.y);
+		self.animationMgr.add(targetAni);
+		
+		self.playerWalkJob = moves;
+		
+		// Richard: Start Walk-Sound here!
+	} else {
+		var targetAni = new AnimationTargetHighlight(self.map.target, [4,5,6,7], 10, pos.x, pos.y);
+		self.animationMgr.add(targetAni);
+		
+		// play error sound
+		SoundModule.getInstance().playSfx("error");
+	}
+};
+
+/**
+ * Checks if condition is met.
+ *
+ * @param {string} name Name of the condition.
+ */
+EventManager.prototype.checkCondition = function(name)
+{
+	if (name == undefined)
+		return true;
+	
+	if (this.conditions[name] == true)
+		return true;
+	else
+		return false;
+};
+
+/**
+ * Execute a talk event.
+ *
+ * @param {object} npc The NPC the events applies to.
+ */
+EventManager.prototype.talkEvent = function(npc)
+{
+	this.storage.incDialogs();
+	
+	switch (npc.te_mode)
+	{
+		case "all":
+			this.executeEventListWithCond(npc.talkevents, npc);
+			break;
+		case "single":
+			var tev = npc.talkevents[npc.te_cntr];
+			if (tev != undefined && this.checkCondition(tev.condition))
+					this.executeEventId(tev.id, npc);
+			break;
+		case "rand":
+			var tev = npc.talkevents[rand(0, npc.talkevents.length)];
+			if (tev != undefined && this.checkCondition(tev.condition))
+					this.executeEventId(tev.id, npc);
+			break;
+		default:
+			con.error("unknown talkevent mode: " + npc.te_mode);
+	}
+};
+
+/**
+ * Execute a player walk job (animation).
+ */
+EventManager.prototype.processNextPlayerWalkJob = function()
+{
+	var self = this;
+	con.debug('nextPlayerWalkJob. Jobs left: ' + self.playerWalkJob.length);
+	var direction = self.playerWalkJob.shift();
+	var dx = 0;
+	var dy = 0;
+	
+	switch (direction)
+	{
+	case "up":
+		dy = -1;
+		break;
+	case "down":
+		dy = 1;
+		break;
+	case "left":
+		dx = -1;
+		break;
+	case "right":
+		dx = 1;
+		break;
+	}
+
+//	this.player.x = this.player.x | 0;
+//	this.player.y = this.player.y | 0;
+	this.player.icon = this.player.ani_walk[direction][0];
+	
+	if (self.playerWalkJob.length == 0)
+	{
+		var npc = self.map.getNpc(self.player.x + dx, self.player.y + dy, self.player.z);
+		if (npc != null)
+		{
+			self.talkEvent(npc);
+			return;
+		}
+	}
+
+	self.player.sx = self.player.x + dx;
+	self.player.sy = self.player.y + dy;
+	
+	self.playerWalkAni = new AnimationPlayerMove(self.player, self.player.ani_walk[direction], dx, dy, 1, self);
+	self.animationMgr.add(self.playerWalkAni);
+	self.storage.incSteps();
+
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AnimationMgr.html">AnimationMgr</a></li><li><a href="AnimationPlayerMove.html">AnimationPlayerMove</a></li><li><a href="AnimationTargetHighlight.html">AnimationTargetHighlight</a></li><li><a href="Dialog.html">Dialog</a></li><li><a href="DialogMgr.html">DialogMgr</a></li><li><a href="Downloader.html">Downloader</a></li><li><a href="Event.html">Event</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="EventTrigger.html">EventTrigger</a></li><li><a href="Map.html">Map</a></li><li><a href="NPC.html">NPC</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SoundModule.html">SoundModule</a></li><li><a href="Storage.html">Storage</a></li><li><a href="StoryGenerator.html">StoryGenerator</a></li><li><a href="Teleport.html">Teleport</a></li><li><a href="Tileset.html">Tileset</a></li><li><a href="XMLConfigLoader.html">XMLConfigLoader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#AStar">AStar</a></li><li><a href="global.html#getVisibleStyle">getVisibleStyle</a></li><li><a href="global.html#helper">helper</a></li><li><a href="global.html#manhattan">manhattan</a></li><li><a href="global.html#setElementStyle">setElementStyle</a></li><li><a href="global.html#splitText">splitText</a></li><li><a href="global.html#successors">successors</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Jul 09 2013 16:35:26 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

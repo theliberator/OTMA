@@ -1,0 +1,180 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|AnyCPU">
+      <Configuration>Debug</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x86">
+      <Configuration>Debug</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|AnyCPU">
+      <Configuration>Release</Configuration>
+      <Platform>AnyCPU</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x86">
+      <Configuration>Release</Configuration>
+      <Platform>x86</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>e439c706-a3b7-4ed5-8c5c-6a70e8c2a86a</ProjectGuid>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '11.0'">
+    <VisualStudioVersion>11.0</VisualStudioVersion>
+  </PropertyGroup>
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).Default.props" />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).props" />
+  <PropertyGroup>
+    <TargetPlatformIdentifier>Windows</TargetPlatformIdentifier>
+    <TargetPlatformVersion>8.0</TargetPlatformVersion>
+    <DefaultLanguage>de-DE</DefaultLanguage>
+    <PackageCertificateKeyFile>otma_TemporaryKey.pfx</PackageCertificateKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <AppxManifest Include="package.appxmanifest">
+      <SubType>Designer</SubType>
+    </AppxManifest>
+    <Content Include="css\index.css" />
+    <Content Include="css\master.css" />
+    <Content Include="img\construction_sign.png" />
+    <Content Include="img\female.png" />
+    <Content Include="img\female_goldenrod_cornflowerblue.png" />
+    <Content Include="img\female_goldenrod_springgreen.png" />
+    <Content Include="img\female_goldenrod_tomato.png" />
+    <Content Include="img\female_goldenrod_violet.png" />
+    <Content Include="img\female_goldenrod_white.png" />
+    <Content Include="img\female_goldenrod_yellow.png" />
+    <Content Include="img\female_peru_cornflowerblue.png" />
+    <Content Include="img\female_peru_springgreen.png" />
+    <Content Include="img\female_peru_tomato.png" />
+    <Content Include="img\female_peru_violet.png" />
+    <Content Include="img\female_peru_white.png" />
+    <Content Include="img\female_peru_yellow.png" />
+    <Content Include="img\icon.png" />
+    <Content Include="img\icon_big.png" />
+    <Content Include="img\male.png" />
+    <Content Include="img\male_goldenrod_cornflowerblue.png" />
+    <Content Include="img\male_goldenrod_springgreen.png" />
+    <Content Include="img\male_goldenrod_tomato.png" />
+    <Content Include="img\male_goldenrod_violet.png" />
+    <Content Include="img\male_goldenrod_white.png" />
+    <Content Include="img\male_goldenrod_yellow.png" />
+    <Content Include="img\male_peru_cornflowerblue.png" />
+    <Content Include="img\male_peru_springgreen.png" />
+    <Content Include="img\male_peru_tomato.png" />
+    <Content Include="img\male_peru_violet.png" />
+    <Content Include="img\male_peru_white.png" />
+    <Content Include="img\male_peru_yellow.png" />
+    <Content Include="img\npc.png" />
+    <Content Include="img\otma_logo.jpg" />
+    <Content Include="img\otma_logo_s.jpg" />
+    <Content Include="img\presenter.png" />
+    <Content Include="img\scientist.png" />
+    <Content Include="img\security.png" />
+    <Content Include="img\splash.png" />
+    <Content Include="img\storelogo.png" />
+    <Content Include="img\target.png" />
+    <Content Include="img\tilesheet.png" />
+    <Content Include="index.html" />
+    <Content Include="js\Animations.js" />
+    <Content Include="js\AStar.js" />
+    <Content Include="js\ColorPicker.js" />
+    <Content Include="js\cordova.js" />
+    <Content Include="js\default.js" />
+    <Content Include="css\default.css" />
+    <Content Include="js\Dialog.js" />
+    <Content Include="js\Downloader.js" />
+    <Content Include="js\Event.js" />
+    <Content Include="js\EventManager.js" />
+    <Content Include="js\EventTrigger.js" />
+    <Content Include="js\helperFunctions.js" />
+    <Content Include="js\index.js" />
+    <Content Include="js\jquery-2.0.2.min.js" />
+    <Content Include="js\jquery.mobile-1.3.1.min.css" />
+    <Content Include="js\jquery.mobile-1.3.1.min.js" />
+    <Content Include="js\Map.js" />
+    <Content Include="js\NPC.js" />
+    <Content Include="js\otma_map.js" />
+    <Content Include="js\Renderer.js" />
+    <Content Include="js\SoundModule.js" />
+    <Content Include="js\Storage.js" />
+    <Content Include="js\StoryGenerator.js" />
+    <Content Include="js\Teleport.js" />
+    <Content Include="js\Tileset.js" />
+    <Content Include="js\XMLConfigLoader.js" />
+    <Content Include="res\audio\achievementUnlocked.mp3" />
+    <Content Include="res\audio\achievementUnlocked.ogg" />
+    <Content Include="res\audio\click.mp3" />
+    <Content Include="res\audio\click.ogg" />
+    <Content Include="res\audio\coffeeMachine.mp3" />
+    <Content Include="res\audio\coffeeMachine.ogg" />
+    <Content Include="res\audio\doorClosed.mp3" />
+    <Content Include="res\audio\doorClosed.ogg" />
+    <Content Include="res\audio\doorOpened.mp3" />
+    <Content Include="res\audio\doorOpened.ogg" />
+    <Content Include="res\audio\error.mp3" />
+    <Content Include="res\audio\error.ogg" />
+    <Content Include="res\audio\itemFound.mp3" />
+    <Content Include="res\audio\itemFound.ogg" />
+    <Content Include="res\audio\slurpCoffeeFemale.mp3" />
+    <Content Include="res\audio\slurpCoffeeFemale.ogg" />
+    <Content Include="res\audio\slurpCoffeeMale.mp3" />
+    <Content Include="res\audio\slurpCoffeeMale.ogg" />
+    <Content Include="res\audio\theme.mp3" />
+    <Content Include="res\audio\theme.ogg" />
+    <Content Include="res\audio\walkFemale.mp3" />
+    <Content Include="res\audio\walkFemale.ogg" />
+    <Content Include="res\audio\walkMale.mp3" />
+    <Content Include="res\audio\walkMale.ogg" />
+    <Content Include="res\facebox\b.png" />
+    <Content Include="res\facebox\bl.png" />
+    <Content Include="res\facebox\br.png" />
+    <Content Include="res\facebox\closelabel.gif" />
+    <Content Include="res\facebox\facebox.css" />
+    <Content Include="res\facebox\facebox.js" />
+    <Content Include="res\facebox\jquery.js_old" />
+    <Content Include="res\facebox\loading.gif" />
+    <Content Include="res\facebox\nextlabel.gif" />
+    <Content Include="res\facebox\shadow.gif" />
+    <Content Include="res\facebox\tl.png" />
+    <Content Include="res\facebox\tr.png" />
+    <Content Include="res\xml\mapEvents.xml" />
+    <Content Include="res\xml\mapLayout.xml" />
+    <Content Include="res\xml\otma-config.xml" />
+    <None Include="otma_TemporaryKey.pfx" />
+  </ItemGroup>
+  <ItemGroup>
+    <SDKReference Include="Microsoft.WinJS.1.0, Version=1.0" />
+  </ItemGroup>
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).targets" />
+  <!-- To modify your build process, add your task inside one of the targets below then uncomment
+       that target and the DisableFastUpToDateCheck PropertyGroup. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  <PropertyGroup>
+    <DisableFastUpToDateCheck>true</DisableFastUpToDateCheck>
+  </PropertyGroup>
+  -->
+</Project>

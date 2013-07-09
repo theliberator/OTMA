@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: SoundModule.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: SoundModule.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/** 
+ * Original version 1.0 released on 29.05.2012 by Richard Gr�tsch
+ * Rewritten on 24.06.2013 by Sebastian Pabel
+ *
+ * @author  Richard Gr�tsch, Sebastian Pabel
+ * @version 2.0
+ * @since	24.06.2013
+ */
+
+/**
+ * @classdesc Initializes and manages the sound and music effects.
+ * For each type (sound and music) a extra audio element is used.
+ * A listener handles the events from the GUI elements which are used for volume settings.
+ */
+ 
+ /**
+ * Used to access SoundModule.
+ *
+ * @returns {SoundModule} The singleton instance.
+ */
+SoundModule.getInstance = function()
+{
+	if (SoundModule.instance == undefined) {
+		SoundModule.instance = new SoundModule();
+	}
+		
+	return SoundModule.instance;
+}
+
+/**
+ * Constructor, should not be used from outside.
+ * Use getInstance() instead.
+ *
+ * @constructor
+ * @returns {SoundModule} 
+*/
+function SoundModule() {
+	
+	var audioExtensionWav = ".wav";
+	var audioExtensionMp3 = ".mp3";
+	var audioExtensionOgg = ".ogg";
+	
+	this.getAudioExtensionWav = function() {
+		return audioExtensionWav;
+	};
+	this.getAudioExtensionMp3 = function() {
+		return audioExtensionMp3;
+	};
+	this.getAudioExtensionOgg = function() {
+		return audioExtensionOgg;
+	};
+	
+	this.audioPath = app.resDir + 'audio/';
+	
+	this.init();
+}
+
+/**
+* @property {string} audioPath Base path for audio resources.
+*/
+SoundModule.prototype.audioPath = 'res/audio/';
+
+/**
+* @property {object} audioElementMusic The current audio element.
+*/
+SoundModule.prototype.audioElementMusic = null;
+
+/**
+* @property {string} audioSourceMusic Path to current media file.
+*/
+SoundModule.prototype.audioSourceMusic = null;
+
+/**
+* @property {boolean} soundEnabled True if sound is enabled, otherwise false.
+*/
+SoundModule.prototype.soundEnabled = false;
+
+/**
+* @property {string} platformAudioExt OS specific audio extensions.
+*/
+SoundModule.prototype.platformAudioExt = "";
+
+/**
+* @property {object} media_objs Array of media objects.
+*/
+SoundModule.prototype.media_objs = {};
+
+/**
+ * Initialize SoundModule.
+ */
+SoundModule.prototype.init = function() {
+	var self = this;
+	
+	switch (app.platform) {
+    case "WinCE_disabled": // WP7 (With PhoneGap Audio), doesn't work well at the moment cause of a bug in PhoneGap
+		// a special path to the audio files must be set
+    	self.audioPath = "/app/www\\audio\\";
+		// the complete source of the audio file
+    	self.audioSourceMusic = self.audioPath + "theme" + self.getAudioExtensionMp3();
+		// create a new phonegap media object for music
+    	self.platformAudioExt = self.getAudioExtensionMp3();
+		break;
+	case "Android": // Android
+		con.info("Platform: " + app.platform);
+		// the complete source of the audio file
+		self.audioSourceMusic = self.audioPath + "theme" + self.getAudioExtensionOgg();
+		self.platformAudioExt = self.getAudioExtensionOgg();
+		break;
+    case "WinCE": // WP7 (with HTML5 Audio), can't play multiple sounds simultaneously
+	case "Web": // Browser
+		con.info("Platform: " + app.platform);
+		// the html5 audio element for music
+		self.audioElementMusic = document.getElementById("audioElementMusic");
+		break;
+	case "windows8": //Windows 8 App
+	    con.log("Platform: " + app.platform);
+	    self.audioSourceMusic = "/res/audio/theme" + self.getAudioExtensionMp3();
+	    self.platformAudioExt = self.getAudioExtensionMp3();
+	    break;
+	default:
+		con.info("unknown platform: " + app.platform);
+        return;
+	}
+	
+	// create a new phonegap media object for music
+	if (self.audioElementMusic == null) {
+		self.audioElementMusic = new Media(
+			self.audioSourceMusic,
+			function() {
+				//success callback function
+				con.debug("Audio Success");
+				self.audioElementMusic.play();
+			},
+			function(error) {
+				//error callback function
+				con.error("Audio Fail\ncode: " + error.code + "\nmessage: " + error.message);
+			});
+	}
+	
+	$('#sound_enable_btn').click(function() {
+		if ($(this).is(':checked')) {
+			con.info('sound has been enabled');
+			self.soundEnabled = true;
+			self.audioElementMusic.play();
+		} else {
+			con.info('sound disabled');
+			self.soundEnabled = false;
+			self.audioElementMusic.pause();
+		}
+	});
+	
+	self.audioElementMusic.pause();
+}
+
+/**
+ * Plays a specified sound effect.
+ *
+ * @param {string} name The name of the sound effect.
+ */
+SoundModule.prototype.playSfx = function(name) 
+{
+	var self = this;
+	
+    con.debug("playSfx: " + name);
+
+	if (!self.soundEnabled){
+		return;
+	}
+
+	var sfx = null;
+
+	if (app.platform != "Web" && app.platform != "WinCE") {
+		var audioSourceSfx = self.audioPath + name + self.platformAudioExt;
+		con.info("sound enabled! play: " + audioSourceSfx);
+		//mobile phone
+		sfx = self.media_objs[name];
+		if (sfx == undefined) {
+			con.debug("create new Media Object for: " + name);
+			sfx = new Media(
+				audioSourceSfx,
+				function() {
+					
+				},
+				function() {
+					con.error("Audio Fail\ncode: " + error.code + "\nmessage: " + error.message);
+				}
+			);
+			self.media_objs[name] = sfx;
+		}
+	} else {
+		//web
+		sfx = document.getElementById("audio_" + name);
+	}
+	
+    if (sfx != null) {
+        try {
+    		con.debug("Try to play");
+		    sfx.play();
+	    } catch (error) {
+		    con.error("Catched error after try: " + error);
+	    }
+    }
+}
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AnimationMgr.html">AnimationMgr</a></li><li><a href="AnimationPlayerMove.html">AnimationPlayerMove</a></li><li><a href="AnimationTargetHighlight.html">AnimationTargetHighlight</a></li><li><a href="Dialog.html">Dialog</a></li><li><a href="DialogMgr.html">DialogMgr</a></li><li><a href="Downloader.html">Downloader</a></li><li><a href="Event.html">Event</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="EventTrigger.html">EventTrigger</a></li><li><a href="Map.html">Map</a></li><li><a href="NPC.html">NPC</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SoundModule.html">SoundModule</a></li><li><a href="Storage.html">Storage</a></li><li><a href="StoryGenerator.html">StoryGenerator</a></li><li><a href="Teleport.html">Teleport</a></li><li><a href="Tileset.html">Tileset</a></li><li><a href="XMLConfigLoader.html">XMLConfigLoader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#AStar">AStar</a></li><li><a href="global.html#getVisibleStyle">getVisibleStyle</a></li><li><a href="global.html#helper">helper</a></li><li><a href="global.html#manhattan">manhattan</a></li><li><a href="global.html#setElementStyle">setElementStyle</a></li><li><a href="global.html#splitText">splitText</a></li><li><a href="global.html#successors">successors</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Jul 09 2013 16:35:26 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

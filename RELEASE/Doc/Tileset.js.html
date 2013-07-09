@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: Tileset.js</title>
+    
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+    
+    <h1 class="page-title">Source: Tileset.js</h1>
+    
+    
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source"><code>/**
+ * class: Tileset
+ * it loads the tileset image and provides functions to draw and clear the tiles on a html-canvas
+ * 
+ * How to use:
+ * - create Tileset object
+ * - call Map.draw() to draw an tile of the set
+ * 
+ * Original version 1.0 released on 09.06.2012 by Ulrich Hornung
+ * Rewritten on 23.06.2013 by Sebastian Pabel
+ *
+ * @author	Ulrich Hornung, Sebastian Pabel
+ * @version 2.0
+ * @since	23.06.2013
+ */
+
+  
+/**
+ * @classdesc  Loads the tileset image and provides functions to draw and clear the tiles on a html-canvas
+ * 
+ * How to use:
+ * - create Tileset object
+ * - call Map.draw() to draw an tile of the set
+ */
+ 
+ 
+ /**
+ * Initialize an instance of Tileset.
+ *
+ * @constructor
+ * @param {string} filename Name of the file containing the tileset images.
+ * @param {int} tilewidth  Width of a tile.
+ * @param {int} tileheight Height of a tile.
+ * @param {int} imgwidth Width of the image.
+ * @param {int} imgheight Height of the image.
+ * @param {object} properties Properties for the tileset.
+ * @param {number} firstgid Id of start tile. 
+ * @param {function} onload Callback function, called after loading of tileset is finished.
+ * @returns A new Tileset instance.
+*/
+function Tileset(filename, tilewidth, tileheight, imgwidth, imgheight, properties, firstgid, onload)
+{
+	this.filename = filename;
+	this.tilewidth = tilewidth | 0;
+	this.tileheight = tileheight | 0;
+	this.imgwidth = imgwidth | 0;
+	this.imgheight = imgheight | 0;
+	this.properties = properties;
+	this.firstgid = firstgid | 0;
+	
+	this.cols = (imgwidth / tilewidth) | 0;
+	this.rows = (imgheight / tileheight) | 0;
+	
+    var img = new Image();
+	img.onload = onload;
+    img.onerror = function() { con.error("ERROR: failed to load image: " + filename); };
+	img.src = filename;
+	this.img = img;
+}
+
+/**
+ * Draws a tile at specified position.
+ *
+ * @param {object} ctx Context.
+ * @param {int} id Id of the tile.
+ * @param {int} x X coordinate of the position of the tile.
+ * @param {int} y Y coordinate of the position of the tile.
+*/
+Tileset.prototype.draw = function(ctx, id, x, y)
+{
+	var size_x = this.tilewidth;
+	var size_y = this.tileheight;
+
+	id = id - this.firstgid;
+
+	var sx = ((id % this.cols) | 0)*size_x;
+	var sy = ((id / this.cols) | 0)*size_y;
+	
+	{			
+		ctx.drawImage(this.img,
+                sx, // source pos + size
+                sy,
+                size_x,
+                size_y,
+                x,  // dest pos + size
+                y,
+                size_x,
+                size_y);
+	}
+};
+
+/**
+ * Clear tile at specified position.
+ *
+ * @param {object} ctx Context.
+ * @param {int} x X coordinate of the position of the tile.
+ * @param {int} y Y coordinate of the position of the tile.
+*/
+Tileset.prototype.clear = function(ctx, x, y)
+{
+	var size_x = this.tilewidth;
+	var size_y = this.tileheight;
+
+	ctx.clearRect(
+            x,  // dest pos + size
+            y,
+            size_x,
+            size_y);
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Index</a></h2><h3>Classes</h3><ul><li><a href="AnimationMgr.html">AnimationMgr</a></li><li><a href="AnimationPlayerMove.html">AnimationPlayerMove</a></li><li><a href="AnimationTargetHighlight.html">AnimationTargetHighlight</a></li><li><a href="Dialog.html">Dialog</a></li><li><a href="DialogMgr.html">DialogMgr</a></li><li><a href="Downloader.html">Downloader</a></li><li><a href="Event.html">Event</a></li><li><a href="EventManager.html">EventManager</a></li><li><a href="EventTrigger.html">EventTrigger</a></li><li><a href="Map.html">Map</a></li><li><a href="NPC.html">NPC</a></li><li><a href="Renderer.html">Renderer</a></li><li><a href="SoundModule.html">SoundModule</a></li><li><a href="Storage.html">Storage</a></li><li><a href="StoryGenerator.html">StoryGenerator</a></li><li><a href="Teleport.html">Teleport</a></li><li><a href="Tileset.html">Tileset</a></li><li><a href="XMLConfigLoader.html">XMLConfigLoader</a></li></ul><h3>Global</h3><ul><li><a href="global.html#app">app</a></li><li><a href="global.html#AStar">AStar</a></li><li><a href="global.html#getVisibleStyle">getVisibleStyle</a></li><li><a href="global.html#helper">helper</a></li><li><a href="global.html#manhattan">manhattan</a></li><li><a href="global.html#setElementStyle">setElementStyle</a></li><li><a href="global.html#splitText">splitText</a></li><li><a href="global.html#successors">successors</a></li></ul>
+</nav>
+
+<br clear="both">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.2.0-dev</a> on Tue Jul 09 2013 16:35:26 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

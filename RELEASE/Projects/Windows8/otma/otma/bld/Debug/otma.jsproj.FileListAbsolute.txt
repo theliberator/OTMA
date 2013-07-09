@@ -1,0 +1,13 @@
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Debug\resources.pri
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Debug\AppxManifest.xml
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Debug\otma.build.appxrecipe
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\priconfig.xml.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\layout.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\resources.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\pri.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\priconfig.xml
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\layout.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\resources.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\pri.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\LanguageQualifiers.txt
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Debug\ProjectArchitectures.txt

@@ -1,0 +1,13 @@
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Release\resources.pri
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Release\AppxManifest.xml
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bin\Release\otma.build.appxrecipe
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\priconfig.xml.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\layout.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\resources.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\pri.resfiles.intermediate
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\priconfig.xml
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\layout.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\resources.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\pri.resfiles
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\LanguageQualifiers.txt
+c:\users\sebastian\documents\visual studio 2012\Projects\otma\otma\bld\Release\ProjectArchitectures.txt

@@ -1,0 +1,293 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <meta charset="utf-8" />
+    <title>otma</title>
+
+    <!-- WinJS-Verweise -->
+    <link href="//Microsoft.WinJS.1.0/css/ui-dark.css" rel="stylesheet" />
+    <script src="//Microsoft.WinJS.1.0/js/base.js"></script>
+    <script src="//Microsoft.WinJS.1.0/js/ui.js"></script>
+
+    <!-- otma references -->
+    <link href="/css/master.css" rel="stylesheet" />
+    <link href="res/facebox/facebox.css" rel="stylesheet" />
+    <link href="js/jquery.mobile-1.3.1.min.css" rel="stylesheet" />
+    <script src="js/jquery-2.0.2.min.js"></script>
+    <script src="js/jquery.mobile-1.3.1.min.js"></script>
+    <script src="js/otma_map.js"></script>
+    <script src="js/cordova.js"></script>
+    <script src="res/facebox/facebox.js"></script>
+    <script src="/js/default.js"></script>
+    <script src="js/Animations.js"></script>
+    <script src="js/Map.js"></script>
+    <script src="js/Teleport.js"></script>
+    <script src="js/NPC.js"></script>
+    <script src="js/Event.js"></script>
+    <script src="js/Dialog.js"></script>
+    <script src="js/AStar.js"></script>
+    <script src="js/Renderer.js"></script>
+    <script src="js/XMLConfigLoader.js"></script>
+    <script src="js/EventManager.js"></script>
+    <script src="js/SoundModule.js"></script>
+    <script src="js/StoryGenerator.js"></script>
+    <script src="js/Downloader.js"></script>
+    <script src="js/ColorPicker.js"></script>
+    <script src="js/Storage.js"></script>
+    <script src="js/EventTrigger.js"></script>
+    <script src="js/helperFunctions.js"></script>
+    <script src="js/Tileset.js"></script>
+    <script src="js/index.js"></script>
+
+    <script>
+        //console config
+        //var con = console; //debug
+        //production
+        var con = {
+  				log: function() {},
+  				error: function() {},
+  				debug: function() {},
+  				info: function() {}
+  		}
+
+        //start the app
+        app.initialize();
+
+	  </script>
+</head>
+  <body id="main"> <!-- onkeydown="controls(event);"> -->
+  <!-- <div id="root_div">
+  </div> -->
+ 	
+ 	<!-- define all audio files used ingame. All audio-tags can accessed with js via their IDs -->
+    <audio id="audioElementMusic" loop="loop">
+		<source src="res/audio/theme.mp3" type="audio/mpeg" />
+        <source src="res/audio/theme.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_achievementUnlocked">
+		<source src="res/audio/achievementUnlocked.mp3" type="audio/mpeg" />
+		<source src="res/audio/achievementUnlocked.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_coffeeMachine">
+        <source src="res/audio/coffeeMachine.mp3" type="audio/mpeg" />
+        <source src="res/audio/coffeeMachine.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_error">
+        <source src="res/audio/error.mp3" type="audio/mpeg" />
+        <source src="res/audio/error.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_slurpCoffeeFemale">
+        <source src="res/audio/slurpCoffeeFemale.mp3" type="audio/mpeg" />
+        <source src="res/audio/slurpCoffeeFemale.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_slurpCoffeeMale">
+        <source src="res/audio/slurpCoffeeMale.mp3" type="audio/mpeg" />
+        <source src="res/audio/slurpCoffeeMale.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_itemFound">
+        <source src="res/audio/itemFound.mp3" type="audio/mpeg" />
+        <source src="res/audio/itemFound.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_doorOpened">
+        <source src="res/audio/doorOpened.mp3" type="audio/mpeg" />
+        <source src="res/audio/doorOpened.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_doorClosed">
+        <source src="res/audio/doorClosed.mp3" type="audio/mpeg" />
+        <source src="res/audio/doorClosed.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+    <audio id="audio_click">
+        <source src="res/audio/click.mp3" type="audio/mpeg" />
+        <source src="res/audio/click.ogg" type="audio/ogg" />
+        Your browser does not support the audio element.
+	</audio>
+	
+		<!-- first jquery-mobile-page is shown at startup:
+			 The Welcomepage -->
+  		<div id="welcomepage" data-role="page">
+			<div data-role="header">
+				<img src="img/otma_logo.jpg" width="100%"/>
+			</div>
+			<div data-role="content">
+				<p><a href="#gamediv" data-role="button" data-icon="arrow-r" id="continue_game_btn" class="ui-disabled">Continue</a></p>
+				<p><a href="#newgamepage" data-role="button" data-icon="refresh" data-rel="dialog" id="new_game_btn">New Game</a></p>	
+				<p><br /></p>
+				<p><a href="#highscore" data-role="button" data-rel="dialog">Highscore</a></p>
+				<p><br /></p>
+				<p><a href="#credits" data-role="button" data-rel="dialog">Credits</a></p>
+				<p><br /></p>
+				<p><a href="#" data-role="button" id="exit_game_button">Exit Game</a></p>
+			</div>
+		</div>
+		
+		<!-- This page is currently not used! -->
+		<div id="failedcontinue"  data-role="page">
+			<div data-role="header">
+				<h1>Error</h1>
+			</div><!-- /header -->	
+			<div data-role="content">
+				<p>Failed to load saved game!</p>
+				<a href="index.html" data-role="button" data-icon="delete" data-inline="true">Back</a>
+			</div>			
+		</div>
+	
+		<!-- This is the dialog which asks for name, gender and cloth-color of player -->
+  		<div id="newgamepage" data-role="page">
+			<div data-role="header">
+				<h1>New Game</h1>
+			</div><!-- /header -->	
+			<div data-role="content">
+			    <p>Welcome to the OTMA-Game!</p>
+			    <label for="name">Please enter your name:</label>
+			    <input type="text" name="name" id="player_name" value="Player"  />
+				<fieldset data-role="controlgroup">
+					<legend>Choose the look of your character:</legend>
+				     	<input type="radio" name="player-class" id="radio-choice-1" value="male" checked="checked" />
+				     	<label for="radio-choice-1">male</label>
+				     	<input type="radio" name="player-class" id="radio-choice-2" value="female"  />
+				     	<label for="radio-choice-2">female</label>
+				</fieldset>
+			    <p>Hair color:</p>
+				<div id='hairColor'></div>
+			    <p>Cloth color:</p>
+				<div id='clothColor'></div>
+				<p>and finally:</p>
+				<p><a href="#gamediv" data-role="button" id="start_btn">Start Game</a></p>	
+			</div>
+		</div>
+  
+  		<!-- This page is the ingame-menu. Here you can activate the Sound. -->
+		<div id="menu1" data-role="page">
+			<div data-role="header">
+				<h1>Main Menu</h1>
+			</div><!-- /header -->
+			<div data-role="content">
+			<!-- <p><a href="#menuhints" id="hints_btn" data-role="button">Hints (0/6)</a></p> -->
+			<p><a href="#menustats" data-role="button" data-rel="dialog">Statistics</a></p>
+			<!-- <p><a href="#gamediv" onclick="setTimeout(function() { gui.forcedDraw();}, 10);" data-role="button">Back to game</a></p>-->
+			<p><a href="#" data-role="button" data-rel="back">Back to game</a></p>
+			<h1>Options</h1>
+			<p><label><input id="sound_enable_btn" type="checkbox" name="checkbox-1" /> Enable Sound </label></p>
+			<h1>Extended</h1>
+			<a id="update_btn" href="#" data-role="button" class="ui-disabled">Update Game</a>
+			<p><a href="#" data-role="button" onClick="app.resetGame(true);">End Game</a></p>
+			</div>
+		</div>
+		
+		<!-- This is the main game-page.
+			 Consists of: Header and Footer and canvas-layers between them.
+			 The header shows current location of player ingame.
+			 The footer has two buttons: Hints and Options.
+			 The game has three canvas layers, which are set by master.css to same position 
+			 one upon the other: background, objects, foreground -->
+		<div id="gamediv" data-role="page">	
+			<div data-role="header" style="height: 42px;">
+				<h1 id="location">OTMA Game</h1>
+			</div><!-- /header -->	
+		  	<div id="canvasesdiv">
+				<canvas id="background" 
+					style="z-index: 1;">
+					This text is displayed if your browser does not support HTML5 Canvas.
+				</canvas>
+				<canvas id="objects"
+					style="z-index: 2;">
+					This text is displayed if your browser does not support HTML5 Canvas.
+				</canvas>
+				<canvas id="foreground"
+					style="z-index: 3;">
+					This text is displayed if your browser does not support HTML5 Canvas.
+				</canvas>
+			</div>
+			<div data-role="footer" style="height: 42px;">
+				<a href="#menuhints" id="hints_btn" data-role="button" data-icon="check" class="ui-btn-left" data-rel="dialog" data-transition="slidedown">Hints (0/6)</a>
+				<h1 id="statustxt"></h1>
+				<a href="#menu1" data-role="button" data-icon="gear" class="ui-btn-right" data-rel="dialog" data-transition="slidedown">Open Menu</a>
+			</div>
+		</div>
+		
+		<!-- Page which shows current statistic data from within the game. -->
+		<div id="menustats" data-role="page">
+			<div data-role="header">
+				<h1>Statistics</h1>
+			</div><!-- /header -->	
+			<div data-role="content">
+				<ul data-role="listview">
+					<li>Time played: <label for="stats-1"></label></li>
+					<li>Steps taken: <label for="stats-2"></label></li>
+					<li>Clicks: <label for="stats-3"></label></li>
+					<li>Dialogs: <label for="stats-4"></label></li>
+				</ul>
+				<br><br>				
+				<p><a href="#" data-direction="reverse" data-role="button" data-rel="back" data-theme="b">Back</a></p>	
+			</div>
+		</div>
+				
+		<!-- Page which shows current collected hints from within the game. -->
+		<div data-role="page" id="menuhints">	
+			<div data-role="header">
+				<h1>Collected Hints</h1>
+			</div><!-- /header -->
+			
+			<div data-role="content">
+				<input type="checkbox" name="hint_0" id="hint_0" class="custom" />
+				<input type="checkbox" name="hint_1" id="hint_1" class="custom" />
+				<input type="checkbox" name="hint_2" id="hint_2" class="custom" />
+				<input type="checkbox" name="hint_3" id="hint_3" class="custom" />
+				<input type="checkbox" name="hint_4" id="hint_4" class="custom" />
+				<input type="checkbox" name="hint_5" id="hint_5" class="custom" />
+				 
+				<label for="hint_0">Hint 1</label>
+				<label for="hint_1">Hint 2</label>
+				<label for="hint_2">Hint 3</label>
+				<label for="hint_3">Hint 4</label>
+				<label for="hint_4">Hint 5</label>
+				<label for="hint_5">Hint 6</label>
+				 
+				<p><a href="#" data-direction="reverse" data-role="button" data-rel="back" data-theme="b">Back</a></p>	
+			</div><!-- /content -->
+		</div>
+		
+		<!-- Page which shows highscore at the end of the game. Can also be accessed from welcomepage -->
+		<div id="highscore" data-role="page">
+			<div data-role="header">
+				<h1>Highscore</h1>
+			</div><!-- /header -->	
+			<div data-role="content">
+				<div id="highscoreContent"></div>
+				<br /><br />
+				<p><a href="#" data-role="button" onClick="app.resetGame(true);">Exit</a></p>	
+				<br />
+				<p><a href="#" data-role="button" onClick="app.resetGame(false);">Delete Highscores</a></p>
+			</div>
+		</div>
+
+		<!-- Authors of the Game, and special thanks, accessable from welcomepage. -->
+		<div id="credits" data-role="page">
+			<div data-role="header">
+				<h1>Credits</h1>
+			</div><!-- /header -->	
+			<div data-role="content">
+				<p>This game was developed at the</p>
+				<h3>University of Applied Sciences Augsburg</h3>
+				<p>in summer term of 2012 by:</p>
+				<p>Richard Grötsch</p>
+				<p>Ulrich Hornung</p>
+				<p>Michael Seider</p>
+				<p>Tobias Sielaff</p>
+				<br>
+				<p>The authors thank Mozilla for the inspiration and graphic templates: http://browserquest.mozilla.org/</p>
+				<p><a href="#" data-role="button" data-rel="back">Back</a></p>	
+			</div>
+		</div>	
+</body>
+</html>
